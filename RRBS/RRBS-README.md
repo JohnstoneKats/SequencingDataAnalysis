@@ -1,4 +1,4 @@
-Reduced representation bisulfite sequencing analysis
+Reduced representation bisulfite sequencing analysis - currently only for mouse (mm10)
 1. fastQC 
 
 2. Trimming
