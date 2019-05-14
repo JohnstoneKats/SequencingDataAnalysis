@@ -2,7 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=16
 #SBATCH --mem-per-cpu=64G
-#SBATCH --time=20:00:00   
+#SBATCH --time=15:00:00   
 #SBATCH --output=%j.stdout
 #SBATCH --error=%j.error
 #SBATCH --mail-type=ALL
