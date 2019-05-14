@@ -8,12 +8,11 @@ The following walk-through provides an example of the analysis pipeline for RRBS
 
 ### Library preparation
  
-For full details of library preparation please see: 
+For a good explanation of library preparation click [here](https://www.epigenesys.eu/images/stories/protocols/pdf/20160127163832_p70.pdf)
 
-in short, libraries were prepared by msp1 digestion of  genomic dna, end repaid and poly-A tailing, adapter ligation and pooling, bisulfite conversion, then library amplification. this results in stranded DNA library of approximate fragment size X 
+In short, genomic DNA was digested with Msp1, Klenow (exo 5'-3'-) was used for end repair and poly-A tailing. Illumina truseq (methylated) DNA Adapters were ligated and samples were pooled. Zymo Methylgold kit was used for bisulfite conversion, Then library amplification was performed with PFU turbo CX. resulting libraries were sizeselected using a pippenprep for fragments between 250-500bp and sequenced on an Illumina Nextseq500. 
 
-
-### Prerequisites
+### Software and Version Control
 
 Bismark/0.18.1
 
@@ -28,8 +27,14 @@ cutadapt /1.14
 FastQC/0.11.5
 
 R: Methylkit/1.11.0
-ggplot2
-reshape2
+
+ggplot2/3.3.1
+
+reshape2/1.4.3
+
+BSgenome/1.52.0
+
+pheatmap/1.0.12
 
 
 ## Aligning Fastq Files
@@ -86,6 +91,7 @@ samtools sort ${x}merged.bam > ${x}mergedsort.bam
 
 samtools index ${x}mergedsort.bam
 ```
+
 ### generating bedgraphs for Visualisation
 
 Input is the merged .sam files generated above. Output can be loaded into IGV or UCSC genome browser. 
@@ -102,6 +108,7 @@ The remaining analysis and plots can be performed in R
 
 first, load in bam files and write to methylkit.txt files for easy access later. 
 .BAM files will need to be in the sam folder as indexed .BAI files
+
 ```
 library(methylKit)
 library(genomation)
@@ -133,18 +140,18 @@ files = as.list( paste("RRBS/",methylkit.txt.list,sep = ""))
 myobjall = methRead(files, sample.id=list("A","A","A","A","B","B","B","B"),
                     assembly="mm10", treatment=c(1,1,1,1,0,0,0,0)
 
-#optional: add chr for downstream analysis 
+#optional: add chr for downstream analysis if your reference genome lacks "chr"
 for (i in 1:8) {myobjall[[i]]$chr<-paste("chr",myobjall[[i]]$chr,sep = "") }
 ```
 
-perform some general QC 
+Perform some general QC 
 
 ```
 getMethylationStats(myobjall[[1]],plot=T,both.strands=FALSE)
 getCoverageStats(myobjall[[2]],plot=TRUE,both.strands=FALSE)
 ```
 
-Filter out C's with low coverage ( <10) and create a single object
+Filter out C's with low coverage (<10) and create a single object
 
 ```
 filtered.myobj=filterByCoverage(myobjall,lo.count=10,lo.perc=NULL,hi.count=NULL,hi.perc=99.9)
@@ -218,18 +225,19 @@ hyper = getMethylDiff(myDiffuncorrected, difference = 25, qvalue = 0.05,
 
 ### DMR Analysis with MethylKit
 
-similar to above analysis, however change first step to tiled analysis as follows: 
+For some analysis, looking at differentially methylated regions may make more sense. Count the methylated C's within a specificied window size (here it is a window sie of 1000bp) and combine all samples into a single table. 
 
 ```
 methtiled = tileMethylCounts(filtered.myobj, cov.bases = 2, win.size = 1000, step.size = 1000)
 methtiledunite<-unite(methtiled, destrand=TRUE, min.per.group=2L)
 ```
+
 ```methtiledunite``` can then be used the same as the ```methall``` object 
 
 
-### Generating a Circos plot
+### Generating a CIRCOS plot
 
-Use myDiffuncorrected object above as input
+Create th ideoDMC function for plotting:
 
 ```
 library(BSgenome)
@@ -286,18 +294,25 @@ ideoDMC <- function(myDiff, chrom.length, difference = 25,
   }
 }
 
+```
+
+Use the ```myDiffuncorrected``` object generated above as input. Use circos = F for a linear chromosome plot.
+
+```
 ideoDMC(myDiffuncorrected, chrom.length = chr.len, difference = 20, qvalue = 0.05,circos = T, title = "test", hyper.col = "red", hypo.col = "blue")
 
 ```
 
 ### Generating a Heatmap
 
-First, calculate percentage methylation 
+First, calculate percentage methylation:
 ```
 mperc.meth=percMethylation(methall)
 
 ```
-Plot the top 100 most significantly differentially methylated Cytosines (or regions)
+
+Then, plot the top 100 most significantly differentially methylated Cytosines (or regions) with pheatmap: 
+
 ```
 ordered<-as.data.frame(mperc.meth[order(myDiffuncorrected$qvalue),])
 pheatmap(ordered[1:100,],border_color = NA,show_rownames = F)
@@ -334,7 +349,7 @@ compare_means(value~group, data=subset(boxplotmelt, !is.na(value)))
 * Stephin Vervoort - *establishing wetlab protocol and helping with initial RRBS analysis*
 
 
-## Further Information and useful tutorials
+## Further information and useful tutorials
 
 [Babraham RRBS guide](http://www.bioinformatics.babraham.ac.uk/projects/bismark/RRBS_Guide.pdf)
 
