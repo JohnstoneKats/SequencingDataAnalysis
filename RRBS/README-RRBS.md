@@ -14,7 +14,7 @@ In short, genomic DNA was digested with Msp1, Klenow (exo 5'-3'-) was used for e
 
 ### General overview of analysis
 
-![GeneralOverview](RRBS/RRBS_Overview.png)
+![GeneralOverview](https://raw.githubusercontent.com/madisonJK/ReferenceAnalysis/RRBS/RRBS_Overview.png)
 
 
 ### Software and Version Control
