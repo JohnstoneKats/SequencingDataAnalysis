@@ -1,9 +1,8 @@
 # Analysis of Next-Gen sequencing data
 
-This folder contains scripts for general analysis and figure generation. 
-please annotate extensively and define all input and output files within your scripts for ease of use.
+This folder contains scripts for general analysis and figure generation. Please annotate extensively and define all input and output files within your scripts for ease of use.
 
-Analysis includes: 
+### Analysis includes: 
 
 1) RNA-seq
 * total RNA-seq (paired end)
@@ -17,14 +16,11 @@ Analysis includes:
 2. ChIP-seq 
 
 * Single-end 
-
 * Paired-end
-
 * with DM3 spike-in
-
 * Traditional differential peak calling analysis
-
 * Window-based differential analysis
+* PolII ChIP-seq analysis
 
 
 3. ATAC-seq
