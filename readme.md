@@ -4,7 +4,7 @@ This folder contains scripts for general analysis and figure generation. Please 
 
 ### Analysis includes: 
 
-# 1) RNA-seq
+#1. RNA-seq
 * total RNA-seq (paired end)
 * 3' RNA-seq (single end) 
 * with ERCC spike-in
@@ -13,7 +13,7 @@ This folder contains scripts for general analysis and figure generation. Please 
 * SLAM-seq
 
 
-# 2. ChIP-seq 
+#2. ChIP-seq 
 
 * Single-end 
 * Paired-end
@@ -23,13 +23,13 @@ This folder contains scripts for general analysis and figure generation. Please 
 * PolII ChIP-seq analysis
 
 
-# 3. ATAC-seq
+#3. ATAC-seq
 
 
-# 4. Reduced Representation Bisulfite Sequencing
+#4. Reduced Representation Bisulfite Sequencing
 
 * Single end 
 * Paired end
 
-# 5. M6A-seq 
+#5. M6A-seq 
 
