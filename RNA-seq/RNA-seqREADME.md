@@ -1,6 +1,7 @@
 # 3' RNA-seq (Quantseq)
 
-Method for quantifying RNA expression levels.
+Quantseq is a method for quantifying RNA expression levels.
+This walkthrough will outline the general steps of analysing a quantseq dataset from fastq files through to figure generation. 
 
 
 ## Getting Started
@@ -61,7 +62,7 @@ samtools view -@ 4 -Sbo ${1}_hisat2.sam.bam ${1}_hisat2.sam
 samtools sort -@ 4 -o ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.bam
 samtools index ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.sorted.bam.bai
 ```
-*Optional:* QC can be performed on the resulting Bam files using RNAseqc. You will need to input a sample file, which is a tab-delimited text file with 3 columns specifying ID, the filename of bam file, and comments. You will need to download the rRNA reference fileand a gtf reference file in addition to a fasta file of the reference genome. 
+*Optional:* QC can be performed on the resulting Bam files using RNAseqc. You will need to input a sample file, which is a tab-delimited text file with 3 columns specifying ID, the filename of bam file, and comments. You will need to download the rRNA reference fileand a gtf reference file in addition to a fasta file of the reference genome. see RNA-SeQC --help for more info. 
 
 ```
 module load rna-seqc
@@ -83,7 +84,7 @@ igvtools count -z 5 -w 25 -e 150 ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.sort
 ### Counting Reads
 
 The resulting bam files can then be used as input into subread's *featureCounts* function:
-*Unstranded option is generally used to imporve mapping rate, but this can be altered by changing -s 1*
+*The unstranded option is generally used to imporve mapping rate, but this can be altered by changing -s 1*
 
 ```
 module load subread
@@ -263,7 +264,7 @@ pheatmap(v$E[c("Hoxa7","Hoxa9","Lmo2","Tal1","Fos","Zfp36"),],border_color = NA)
 
 ### Boxplot of target genes
 
-Easy default boxplots
+Easy default boxplots:
 ```
 nice.col <- brewer.pal(4,name="Dark2")
 
