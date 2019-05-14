@@ -6,25 +6,25 @@ please annotate extensively and define all input and output files within your sc
 Analysis includes: 
 
 1) RNA-seq
-1.1) total RNA-seq
-1.2)  3' RNA-seq
-1.3)  with ERCC spike-in
-1.4) PRO-seq/TT-seq
-1.5) GRO-seq
-1.6) SLAM-seq
+* total RNA-seq (paired end)
+* 3' RNA-seq (single end) 
+* with ERCC spike-in
+* PRO-seq/TT-seq
+* GRO-seq
+* SLAM-seq
 
 
 2. ChIP-seq 
 
-2.1 Single-end 
+* Single-end 
 
-2.2 Paired-end
+* Paired-end
 
-2.3 with DM3 spike-in
+* with DM3 spike-in
 
-2.4 with traditional differential peak calling analysis
+* Traditional differential peak calling analysis
 
-2.5 with window-based differential analysis
+* Window-based differential analysis
 
 
 3. ATAC-seq
@@ -32,4 +32,8 @@ Analysis includes:
 
 4. Reduced Representation Bisulfite Sequencing
 
-4.1 with enhanced mapping efficiency
+* Single end 
+* Paired end
+
+5. M6A-seq 
+
