@@ -2,13 +2,14 @@
 
 Method for quantifying RNA expression levels.
 
+
 ## Getting Started
 
 The following walk-through provides an example of the analysis pipeline for RNA-seq data. For the purposes of this example, we will be starting with demultiplexed fastq files. These files have been sequenced single ended 75bp at approximately 20 million paired reads per sample. 
 
 The PeterMac bioinformatics core automatically applies Seqliner2.0 pipeline to the Fastq files to produce .bam and .bai files. if you wish to start with these skip to the **Counting Reads** section.
 
-The packages used have been referenced at the end, the majority of this analysis is from the user manuals linked below, with only slight deviations from default settings. 
+The software used have been referenced at the end, the majority of this analysis is based on the user manuals linked below, with only slight deviations from default settings. 
 
 ### Library preparation
  
@@ -80,8 +81,8 @@ igvtools count -z 5 -w 25 -e 150 ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.sort
 
 ### Counting Reads
 
-The resulting bam files can then be used as input into subreads *featureCounts* function:
-*Unstranded is generally used, but can be altered by changing -s 1*
+The resulting bam files can then be used as input into subread's *featureCounts* function:
+*Unstranded option is generally used to imporve mapping rate, but this can be altered by changing -s 1*
 
 ```
 module load subread
@@ -272,7 +273,7 @@ Hoxa9<-boxplot(v$E["Hoxa9",]~group,vertical=TRUE,las=2,cex.axis=1,pch=16,cex=1.3
                col=nice.col,method="jitter",ylab="Normalised log2 expression",
                main="Hoxa9")
 ```
-Harder (but nicer looking) ggplot2 and reshape2 boxplots:
+ggplot2 and reshape2 boxplots (slightly nicer looking):
 
 ```
 Targets1<- as.data.frame(t(v$E[c("Hoxa7","Hoxa9","Lmo2","Tal1","Fos","Zfp36"),]))
@@ -316,7 +317,7 @@ g
 
 ### Barcode plots
 
-If you have corresponding genesets (up and down) you could make a barcode plot. genelist is a character string of genenames in the geneset of interest. 
+If you have matching genesets (up and down) you could make a barcode plot. ```genelist``` is a character string of gene names. 
 
 ```
 genesetup<-read.table(genelist1)
@@ -364,7 +365,7 @@ write.table(ResultsOrder,"Human.rnk",sep="\t",quote = F,col.names = F,row.names 
 ## Acknowledgments
 
 
-* **Madison Kelly** - *Author of this workflow* [madisonJK](https://github.com/madisonJK)
+* **Madison Kelly** - *Author of readme* [madisonJK](https://github.com/madisonJK)
 
 * Stephin Vervoort - *Helping with initial RNAseq analysis*
 
@@ -373,6 +374,9 @@ write.table(ResultsOrder,"Human.rnk",sep="\t",quote = F,col.names = F,row.names 
 
 [Combine RNA-seq tutorial](http://combine-australia.github.io/RNAseq-R/)
 
+[featureCounts User Guide](http://bioinf.wehi.edu.au/featureCounts/)
+
+[Hisat2 Manual](https://ccb.jhu.edu/software/hisat2/manual.shtml) 
 
 
 ## References
@@ -381,3 +385,4 @@ Liao, Y., Smyth, G. K., & Shi, W. (2013). The Subread aligner: fast, accurate an
 
 Moll, P., Ante, M., Seitz, A., & Reda, T. (2014). QuantSeq 3′ mRNA sequencing for RNA quantification. Nature Methods, 11(12).
 
+Ritchie, M. E., Phipson, B., Wu, D., Hu, Y., Law, C. W., Shi, W., & Smyth, G. K. (2015). limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research, 43(7), e47–e47.
