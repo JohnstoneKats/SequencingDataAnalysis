@@ -14,7 +14,8 @@ The software used have been referenced at the end, the majority of this analysis
 ### Library preparation
  
 RNA was extracted from cells using trizol and directzol RNA extraction kit according to manufacturers instructions. 
-Quantseq library preparation kit was used 
+Lexogen QuantSeq 3' mRNA-Seq Library Prep Kit FWD for Illumina was used for library preparation by the Peter Mac Molecular Genomics Core. 
+
 
 ### General overview of RNA-seq analysis
 
