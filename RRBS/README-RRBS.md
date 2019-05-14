@@ -12,6 +12,11 @@ For a good explanation of library preparation click [here](https://www.epigenesy
 
 In short, genomic DNA was digested with Msp1, Klenow (exo 5'-3'-) was used for end repair and poly-A tailing. Illumina truseq (methylated) DNA Adapters were ligated and samples were pooled. Zymo Methylgold kit was used for bisulfite conversion, Then library amplification was performed with PFU turbo CX. resulting libraries were sizeselected using a pippenprep for fragments between 250-500bp and sequenced on an Illumina Nextseq500. 
 
+### General overview of analysis
+
+![GeneralOverview](RRBS/RRBS_Overview.png)
+
+
 ### Software and Version Control
 
 Bismark/0.18.1
