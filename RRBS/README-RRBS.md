@@ -1,16 +1,18 @@
 # Reduced Representation Bisulfite Sequencing
 
-Method for the base pair resolution detection of methylated cytosines on a CGI-enriched sample of the genome. 
+Method for base pair resolution detection of methylated cytosines on DNA from a CGI-enriched sample of the genome. 
 
 ## Getting Started
 
-The following walk-through provides an example of the analysis pipeline for RRBS data. For the purposes of this example, we will be starting with demultiplexed fastq files. These files have been sequenced paired end 75bp at approximately 20million paired reads per sample. 
+The following walk-through provides an example of the analysis pipeline for RRBS data. For the purposes of this example, we will be starting with demultiplexed fastq files. These files have been sequenced paired end 75bp at approximately 20 million paired reads per sample. 
+
+The packages used have been referenced at the end, the majority of this analysis is from the user manuals linked below, with only slight deviations from default settings. 
 
 ### Library preparation
  
 For a good explanation of library preparation click [here](https://www.epigenesys.eu/images/stories/protocols/pdf/20160127163832_p70.pdf)
 
-In short, genomic DNA was digested with Msp1, Klenow (exo 5'-3'-) was used for end repair and poly-A tailing. Illumina truseq (methylated) DNA Adapters were ligated and samples were pooled. Zymo Methylgold kit was used for bisulfite conversion, Then library amplification was performed with PFU turbo CX. resulting libraries were sizeselected using a pippenprep for fragments between 250-500bp and sequenced on an Illumina Nextseq500. 
+In short, genomic DNA was digested with Msp1, Klenow (exo 5'-3'-) was used for end repair and poly-A tailing. Illumina truseq (methylated) DNA Adapters were ligated and samples were pooled. Zymo Methylgold kit was used for bisulfite conversion, Then library amplification was performed with PFU turbo CX. resulting libraries were size selected using a pippenprep for fragments between 250-500bp and sequenced on an Illumina Nextseq500. 
 
 ### General overview of analysis
 
@@ -311,6 +313,7 @@ ideoDMC(myDiffuncorrected, chrom.length = chr.len, difference = 20, qvalue = 0.0
 ### Generating a Heatmap
 
 First, calculate percentage methylation:
+
 ```
 mperc.meth=percMethylation(methall)
 
@@ -346,7 +349,7 @@ compare_means(value~group, data=subset(boxplotmelt, !is.na(value)))
 
 ## Author of this workflow
 
-* ** Madison Kelly ** - [madisonJK](https://github.com/madisonJK)
+* **Madison Kelly** - [madisonJK](https://github.com/madisonJK)
 
 
 ## Acknowledgments
@@ -371,4 +374,15 @@ compare_means(value~group, data=subset(boxplotmelt, !is.na(value)))
 
 
 ## References
+
+Akalin, A., Kormaksson, M., Li, S., Garrett-Bakelman, F. E., Figueroa, M. E., Melnick, A., & Mason, C. E. (2012). methylKit: a comprehensive R package for the analysis of genome-wide DNA methylation profiles. Genome Biology, 13(10), R87.
+
+Krueger, F., & Andrews, S. R. (2011). Bismark: a flexible aligner and methylation caller for Bisulfite-Seq applications. Bioinformatics, 27(11), 1571–1572.
+
+Krueger, F. (2015). Trim Galore!: A wrapper tool around Cutadapt and FastQC to consistently apply quality and adapter trimming to FastQ files. Retrieved April 28, 2016, from  http://www. bioinformatics. babraham. ac. uk/projects/trim_galore/
+
+Martin, M. (2011). Cutadapt removes adapter sequences from high-throughput sequencing reads. EMBnet.Journal, 17(1), 10–12.
+
+Meissner, A., Gnirke, A., Bell, G. W., Ramsahoye, B., Lander, E. S., & Jaenisch, R. (2005). Reduced representation bisulfite sequencing for comparative high-resolution DNA methylation analysis. Nucleic Acids Research, 33(18), 5868–5877.
+
 
