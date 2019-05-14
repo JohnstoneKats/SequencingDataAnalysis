@@ -165,7 +165,7 @@ filtered.myobj=filterByCoverage(myobjall,lo.count=10,lo.perc=NULL,hi.count=NULL,
 methall = unite(filtered.myobj, destrand=TRUE, min.per.group=2L)
 
 ```
-plot correlation and clustering
+Plot correlation and clustering
 
 ```
 getCorrelation(na.omit(methall),method = "pearson",plot = F)
@@ -175,7 +175,7 @@ pheatmap(corr)
 clusterSamples(methall, dist="correlation", method="ward", plot=TRUE)
 PCASamples(methall, screeplot=TRUE)
 ```
-annotate C's with genomic parts or CGIs
+Annotate C's with genomic parts or CGIs
 
 ```
 gene.obj=readTranscriptFeatures("RRBS/mm10genes.bed")
@@ -212,16 +212,16 @@ myDiffuncorrected=calculateDiffMeth(methall,mc.cores=4)
 myDiff20unc=getMethylDiff(myDiffuncorrected,difference=25,qvalue=0.05)
 
 ```
-plot differential methylation per chromosome 
+Plot differential methylation per chromosome 
 ```
 diffMethPerChr(myDiffuncorrected,plot=TRUE,qvalue.cutoff=0.01, meth.cutoff=25)
 ```
-save differential C's as a bedgraph
+Save differential C's as a bedgraph
 ```
 bedgraph(myDiff20unc, file.name = "MK26dmc.bed", col.name = "meth.diff", unmeth = FALSE,
          log.transform = FALSE, negative = FALSE, add.on = "")
 ```
-find hypo/hypermethylated cytosines 
+Find hypo/hypermethylated cytosines 
 
 ```
 hypo = getMethylDiff(myDiffuncorrected, difference = 25, qvalue = 0.05, 
@@ -346,13 +346,10 @@ ggplot(data = boxplotmelt, aes(x=group, y=value)) + geom_boxplot(aes(fill=group)
 compare_means(value~group, data=subset(boxplotmelt, !is.na(value)))
 ```
 
-
-## Author of this workflow
-
-* **Madison Kelly** - [madisonJK](https://github.com/madisonJK)
-
-
 ## Acknowledgments
+
+
+* **Madison Kelly** - *author of this workflow* [madisonJK](https://github.com/madisonJK)
 
 * Stephin Vervoort - *establishing wetlab protocol and helping with initial RRBS analysis*
 
@@ -372,14 +369,13 @@ compare_means(value~group, data=subset(boxplotmelt, !is.na(value)))
 [MethylKit User guide](https://bioconductor.org/packages/release/bioc/vignettes/methylKit/inst/doc/methylKit.html)
 
 
-
 ## References
 
 Akalin, A., Kormaksson, M., Li, S., Garrett-Bakelman, F. E., Figueroa, M. E., Melnick, A., & Mason, C. E. (2012). methylKit: a comprehensive R package for the analysis of genome-wide DNA methylation profiles. Genome Biology, 13(10), R87.
 
 Krueger, F., & Andrews, S. R. (2011). Bismark: a flexible aligner and methylation caller for Bisulfite-Seq applications. Bioinformatics, 27(11), 1571–1572.
 
-Krueger, F. (2015). Trim Galore!: A wrapper tool around Cutadapt and FastQC to consistently apply quality and adapter trimming to FastQ files. Retrieved April 28, 2016, from  \http://www.bioinformatics. babraham. ac. uk/projects/trim_galore/
+Krueger, F. (2015). Trim Galore!: A wrapper tool around Cutadapt and FastQC to consistently apply quality and adapter trimming to FastQ files. Retrieved April 28, 2016, from  http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/
 
 Martin, M. (2011). Cutadapt removes adapter sequences from high-throughput sequencing reads. EMBnet.Journal, 17(1), 10–12.
 
