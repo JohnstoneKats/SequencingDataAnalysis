@@ -33,3 +33,4 @@ This folder contains scripts for general analysis and figure generation. Please 
 
 **5. M6A-seq**
 
+**6. CRISPR screen analysis**
