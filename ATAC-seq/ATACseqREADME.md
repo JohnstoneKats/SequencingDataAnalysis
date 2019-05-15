@@ -19,7 +19,7 @@ For more information about the ATAC-seq wetlab protocol please go [Here](https:/
 
 ### General overview of RNA-seq analysis
 
-![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/ATAC-Seq/ATAC-seq_Overview.png)
+![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/ATAC-seq/ATAC-seq_Overview.png)
 
 
 ### Software requirements and Version Control
