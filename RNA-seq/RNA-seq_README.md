@@ -55,6 +55,7 @@ pheatmap/1.0.12
 
 ### QC
 Perform QC on Fastq files using fastqc 
+
 *1_fastQC.sbatch
 ```
 module load fastqc
@@ -65,6 +66,7 @@ fastqc -o ${d} -f fastq --noextract -t 8 ${1}
 ### Align to reference genome with Hisat2
 Align Fastq files to the mouse genome (mm10) using Hisat2. The resulting sam files are then sorted, converted to bam and indexed with samtools. You will need a hisat indexed reference genome. For paired ended data, use 2.1_Hisat2_Mouse_PE.sbatch 
 If you have an ERCC spike in, you will need to map to a merged reference genome e.g. mm10+ERCC. 
+
 *2_Hisat2_Mouse_SE.sbatch
 ```
 module load hisat2
@@ -88,7 +90,9 @@ RNA-SeQC -s "ID|filename.bam|comments"  -t ref/mm10genes.gtf -o m6a/Fastq/RNAseq
 ```
 
 IGV tools can also be used to generate a .tdf for visualisation with IGV
+
 *2_Hisat2_Mouse_SE.sbatch
+
 ```
 module load igvtools
 
@@ -98,8 +102,9 @@ igvtools count -z 5 -w 25 -e 150 ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.sort
 
 ### Counting Reads
 
-The resulting bam files can then be used as input into subread's *featureCounts* function:
-*The unstranded option is generally used to imporve mapping rate, but this can be altered by changing -s 1*
+The resulting bam files can then be used as input into subread's *featureCounts* function.
+*The unstranded option is generally used to imporve mapping rate, but this can be altered by changing ```-s 1```*
+
 *4_featureCounts.sbatch
 ```
 module load subread
