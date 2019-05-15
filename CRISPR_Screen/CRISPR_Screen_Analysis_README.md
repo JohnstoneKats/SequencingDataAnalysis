@@ -1,7 +1,7 @@
 # CRISPR screen analysis
 genome wide screens and targeted screens 
 
-##Version control 
+## Version control 
 
 cutadapt /1.14
 
