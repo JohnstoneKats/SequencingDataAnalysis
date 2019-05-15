@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=16
-#SBATCH --mem-per-cpu=64G
+#SBATCH --mem-per-cpu=32G
 #SBATCH --time=2:00:00   
 #SBATCH --output=%j.stdout 
 #SBATCH --error=%j.stderr
