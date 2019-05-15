@@ -1,4 +1,4 @@
-# 3' ChIP-seq
+# ChIP-seq
 
 This walkthrough will outline the general steps of analysing a ChIP-seq dataset from fastq files through to figure generation. 
 see ```--help``` for more availavle options at each step. 
