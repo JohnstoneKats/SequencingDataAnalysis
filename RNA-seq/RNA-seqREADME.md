@@ -62,7 +62,7 @@ module load fastqc
 fastqc -o ${d} -f fastq --noextract -t 8 ${1}
 ```
 
-## Align to reference genome with Hisat2
+### Align to reference genome with Hisat2
 Align Fastq files to the mouse genome (mm10) using Hisat2. The resulting sam files are then sorted, converted to bam and indexed with samtools. You will need a hisat indexed reference genome. For paired ended data, use 2.1_Hisat2_Mouse_PE.sbatch 
 
 *2_Hisat2_Mouse_SE.sbatch
