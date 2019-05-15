@@ -64,7 +64,7 @@ fastqc -o ${d} -f fastq --noextract -t 8 ${1}
 
 ### Align to reference genome with Hisat2
 Align Fastq files to the mouse genome (mm10) using Hisat2. The resulting sam files are then sorted, converted to bam and indexed with samtools. You will need a hisat indexed reference genome. For paired ended data, use 2.1_Hisat2_Mouse_PE.sbatch 
-
+If you have an ERCC spike in, you will need to map to a merged reference genome e.g. mm10+ERCC. 
 *2_Hisat2_Mouse_SE.sbatch
 ```
 module load hisat2
@@ -300,7 +300,6 @@ df.t <- melt(Targets1, id.var = "group")
 ggplot(data = df.t, aes(x=variable, y=value)) + geom_boxplot(aes(fill=group)) + theme_light() +
 facet_wrap( ~ variable, scales="free",nrow =1) +scale_fill_brewer(palette="Set1",direction = -1)+ 
   xlab("") +  ylab("Normalised CPM") + ggtitle(" RNA")
-
 
 ```
 
