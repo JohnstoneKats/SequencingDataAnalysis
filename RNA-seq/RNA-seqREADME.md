@@ -50,9 +50,22 @@ reshape2/1.4.3
 pheatmap/1.0.12
 
 
-## Aligning Fastq Files
- Fastq files are alined to the Mouse genome ( mm10) using Hisat. The resulting sam files are sorted, converted to bam and indexed with samtools. You will need a hisat indexed reference genome. 
 
+## Aligning Fastq Files
+
+### QC
+Perform QC on Fastq files using fastqc 
+*1_fastQC.sbatch
+```
+module load fastqc
+
+fastqc -o ${d} -f fastq --noextract -t 8 ${1}
+```
+
+## Align to reference genome with Hisat2
+Align Fastq files to the mouse genome (mm10) using Hisat2. The resulting sam files are then sorted, converted to bam and indexed with samtools. You will need a hisat indexed reference genome. For paired ended data, use 2.1_Hisat2_Mouse_PE.sbatch 
+
+*2_Hisat2_Mouse_SE.sbatch
 ```
 module load hisat2
 module load samtools
@@ -61,9 +74,11 @@ hisat2 -p 8 -x /data/reference/indexes/mouse/mm10/hisat2/grcm38/Mus_musculus.GRC
 samtools view -@ 4 -Sbo ${1}_hisat2.sam.bam ${1}_hisat2.sam
 samtools sort -@ 4 -o ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.bam
 samtools index ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.sorted.bam.bai
-```
-*Optional:* QC can be performed on the resulting Bam files using RNAseqc. You will need to input a sample file, which is a tab-delimited text file with 3 columns specifying ID, the filename of bam file, and comments. You will need to download the rRNA reference fileand a gtf reference file in addition to a fasta file of the reference genome. see RNA-SeQC --help for more info. 
 
+```
+*Optional:* QC can be performed on the resulting Bam files using RNAseqc. You will need to input a sample file, which is a tab-delimited text file with 3 columns specifying ID, the filename of bam file, and comments. You will need to download the rRNA reference fileand a gtf reference file in addition to a fasta file of the reference genome. see RNA-SeQC --help for more info.
+
+*3_RNAseQC.sbatch
 ```
 module load rna-seqc
 module load java
@@ -73,7 +88,7 @@ RNA-SeQC -s "ID|filename.bam|comments"  -t ref/mm10genes.gtf -o m6a/Fastq/RNAseq
 ```
 
 IGV tools can also be used to generate a .tdf for visualisation with IGV
-
+*2_Hisat2_Mouse_SE.sbatch
 ```
 module load igvtools
 
@@ -85,24 +100,23 @@ igvtools count -z 5 -w 25 -e 150 ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.sort
 
 The resulting bam files can then be used as input into subread's *featureCounts* function:
 *The unstranded option is generally used to imporve mapping rate, but this can be altered by changing -s 1*
-
+*4_featureCounts.sbatch
 ```
 module load subread
 
 featureCounts -t exon -g gene_id -F 'GTF/GFF' -O -M -s 0 -a data/reference/gtf/Mus_musculus.GRCm38.90.gtf  -o counts.txt *.sorted.bam
 ```
 
-## Differential Methylation Analysis
+## Differential Expression Analysis
 
 ### Limma/Voom
 
 The remaining analysis and figure generation can be performed in R. This analysis is based on the [Combine RNA-seq tutorial](http://combine-australia.github.io/RNAseq-R/).
 
 
-
 First, install and load libraries needed for analysis and figure generation
 may need to use  ```BiocManager::install()``` instead of ```biocLite()``` if using Bioconducter 3.9
-
+*5_RNA_Seq_Analysis.R
 ```
 source("http://bioconductor.org/biocLite.R")
 biocLite("edgeR")
