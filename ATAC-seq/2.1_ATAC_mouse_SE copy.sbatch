@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks=32
-#SBATCH --mem-per-cpu=128G
-#SBATCH --time=8:00:00   
+#SBATCH --ntasks=16
+#SBATCH --mem-per-cpu=64G
+#SBATCH --time=2:00:00   
 #SBATCH --output=%j.stdout 
 #SBATCH --error=%j.stderr
 #SBATCH --mail-type=ALL
