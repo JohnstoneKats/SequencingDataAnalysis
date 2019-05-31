@@ -182,7 +182,7 @@ plotMD(fit.cont,coef=1,status=summa.fit)
 
 
 * **Madison Kelly** - *Author of readme* [madisonJK](https://github.com/madisonJK)
-* **Yogesh Kumar** - *Developed initial m6a analysis pipeline*
+* **Yogesh Kumar** - *Developed initial m6a analysis for the Das lab*
 
 
 
