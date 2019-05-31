@@ -7,14 +7,8 @@
 #SBATCH --error=%j.stderr
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=madison.kelly@petermac.org
-# SBATCH --workdir=$1
 #SBATCH --partition=prod
 
-### Run this command from the folder with the sbatch files
-### for dir in `ls`; do sbatch trimmed_anbalysis.sbatch $dir; done
-### indices files: /data/reference/indexes/mouse/mm10/hisat2
-
-### If experimenting: use srun --pty /bin/bash
 
 module load star
 module load samtools
