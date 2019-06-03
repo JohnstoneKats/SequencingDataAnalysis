@@ -54,8 +54,9 @@ reshape2/1.4.3
 pheatmap/1.0.12
 
 ## Trimming adapter sequences
-The fastq files need to be trimmed for illumina adapter sequences. This can be performed using cutadapt or trimgalore: 
+The fastq files need to be trimmed for illumina adapter sequences, and filter the resulting reads based on both quality and length. This can be performed using cutadapt or trimgalore: 
 
+*1_trimming_cutadapt*
 ```
 module load cutadapt
 s=$(basename $1)
@@ -66,8 +67,26 @@ echo ${1}
 
 cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -G AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT -q 30,30 -m 30 -o ${t}/${x}_R1.trimmed.fastq.gz -p ${t}/${x}_R2.trimmed.fastq.gz  ${t}/${x}_R1.fastq.gz ${t}/${x}_R2.fastq.gz
 ```
+or Trimgalore! can be used (preferred method) 
+
+*1.2_trimming_trimgalore*
+
+```
+
+
+```
 
 *Important note: ensure that R1 and R2 files are balanced and in order following trimming or alignment will fail*
+
+### Optional QC
+
+You can run FastQC both before and after trimming to visualise the effect of trimming:
+
+```
+
+```
+
+
 
 ## Aligning Fastq Files
 Fastq files are aligned to the Mouse genome (mm10) using STAR. The resulting sam files are sorted, converted to bam and indexed with samtools. 
@@ -76,9 +95,11 @@ You will need to run star genomeGenerate first to generate the reference genome:
 
 ```
 module load star
-STAR --runMode genomeGenerate --runThreadN 8 --genomeDir ref/mm10STAR --genomeFastaFiles ../../../data/reference//indexes/mouse//mm10/fasta/Mus_musculus.GRCm38.dna.toplevel.fa --sjdbGTFfile ../../../data/reference/gtf/Mus_musculus.GRCm38.90.gtf
+STAR --runMode genomeGenerate --sjdbOverhang 149 --runThreadN 8 --genomeDir ref/mm10STAR --genomeFastaFiles ../../../data/reference//indexes/mouse//mm10/fasta/Mus_musculus.GRCm38.dna.toplevel.fa --sjdbGTFfile ../../../data/reference/gtf/Mus_musculus.GRCm38.90.gtf
 
 ```
+
+```--sjdbOverhang``` is fragment size -1 
 
 Next, align the trimmed Fastq files with STAR, then convert to Bam and index with samtools. These settings are are very low stringency for alignment, as the fragments appear small.
 
