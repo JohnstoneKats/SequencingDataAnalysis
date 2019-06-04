@@ -21,7 +21,7 @@ The software used have been referenced at the end, the majority of this analysis
 For more information about the ATAC-seq wetlab protocol please go [Here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4374986/)
 
 
-### General overview of RNA-seq analysis
+### General overview of ATAC-seq analysis steps
 
 ![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/ATAC-seq/ATAC-seq_Overview.png)
 
