@@ -1,9 +1,13 @@
 # ATAC-seq
 
 This walkthrough will outline the general steps of analysing a ATAC-seq dataset from fastq files through to figure generation. 
-see ```--help``` for more availavle options at each step. 
+see ```--help``` for more available options at each step. 
+
 If you're just interested in genes which are associated with open chromatin, ATAC-seq analysis is very similar to ChIP-seq.
-More in-depth analysis, such as [footprinting](https://bioinformatics-core-shared-training.github.io/cruk-summer-school-2018/ChIP/Practicals/Practical10_ATAC-seq_analysis_SS.html), can also be done but will not be covered herein. 
+More in-depth analysis, such as [footprinting](https://bioinformatics-core-shared-training.github.io/cruk-summer-school-2018/ChIP/Practicals/Practical10_ATAC-seq_analysis_SS.html), can also be performed with high resolution ATAC-seq data but will not be covered herein. 
+
+[Here](https://informatics.fas.harvard.edu/atac-seq-guidelines.html) is a good tutorial walkthrough for ATAC-seq.
+
 
 ## Getting Started
 
