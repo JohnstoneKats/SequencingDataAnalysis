@@ -17,7 +17,7 @@ For  details of m6a-RIP seq  wetlab protocol see:
 
 ### General overview of RNA-seq analysis
 
-![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/RNA-seq/RNA-seq_Analysis_Overview.png)
+![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/M6A-seq/m6aOverview.png)
 
 
 ### Software and Version Control
@@ -54,22 +54,9 @@ reshape2/1.4.3
 pheatmap/1.0.12
 
 ## Trimming adapter sequences
-The fastq files need to be trimmed for illumina adapter sequences, and filter the resulting reads based on both quality and length. This can be performed using cutadapt or trimgalore: 
+The fastq files need to be trimmed for illumina adapter sequences, and filter the resulting reads based on both quality and length. This can be performed using cutadapt or trimgalore(preferred method) : 
 
-*1_trimming_cutadapt*
-```
-module load cutadapt
-s=$(basename $1)
-x=`echo $s | cut -d "_" -f 1-2`
-t=$(dirname $1)
-
-echo ${1}
-
-cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -G AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT -q 30,30 -m 30 -o ${t}/${x}_R1.trimmed.fastq.gz -p ${t}/${x}_R2.trimmed.fastq.gz  ${t}/${x}_R1.fastq.gz ${t}/${x}_R2.fastq.gz
-```
-or Trimgalore! can be used (preferred method) 
-
-*1.2_trimming_trimgalore*
+*1.1_trimgalore*
 
 ```
 module load trimgalore
@@ -80,7 +67,7 @@ t=$(dirname $1)
 x=`echo $s | cut -d "_" -f 1-2`
 
 
-trim_galore --paired -q 30 --length 30--fastqc ${t}/${x}_R1_001.fastq.gz ${t}/${x}_R2_001.fastq.gz -o ${t}
+trim_galore --paired -q 30 --length 30 --fastqc ${t}/${x}_R1_001.fastq.gz ${t}/${x}_R2_001.fastq.gz -o ${t}
 
 ```
 
@@ -91,6 +78,13 @@ trim_galore --paired -q 30 --length 30--fastqc ${t}/${x}_R1_001.fastq.gz ${t}/${
 You can run FastQC both before and after trimming to visualise the effect of trimming:
 
 ```
+module load fastqc
+
+d=$(dirname $1)
+
+echo ${1}
+
+fastqc -o ${d} -f fastq --noextract -t 8 ${1}
 
 ```
 
