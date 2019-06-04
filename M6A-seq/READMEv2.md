@@ -54,7 +54,9 @@ reshape2/1.4.3
 pheatmap/1.0.12
 
 ## Trimming adapter sequences
-The fastq files need to be trimmed for illumina adapter sequences, and filter the resulting reads based on both quality and length. This can be performed using cutadapt or trimgalore(preferred method) : 
+The fastq files need to be trimmed for illumina adapter sequences, and filter the resulting reads based on both quality and length. This can be performed using cutadapt or trimgalore(preferred method).
+
+Input a your R1 files
 
 *1.1_trimgalore*
 
@@ -67,7 +69,7 @@ t=$(dirname $1)
 x=`echo $s | cut -d "_" -f 1-2`
 
 
-trim_galore --paired -q 30 --length 30 --fastqc ${t}/${x}_R1_001.fastq.gz ${t}/${x}_R2_001.fastq.gz -o ${t}
+trim_galore --paired -q 30 --length 30 --fastqc ${t}/${x}_R1.fastq.gz ${t}/${x}_R2.fastq.gz -o m6a/trimmed
 
 ```
 
@@ -89,19 +91,16 @@ fastqc -o ${d} -f fastq --noextract -t 8 ${1}
 ```
 
 
-
 ## Aligning Fastq Files
 Fastq files are aligned to the Mouse genome (mm10) using STAR. The resulting sam files are sorted, converted to bam and indexed with samtools. 
 
-You will need to run star genomeGenerate first to generate the reference genome:
+You will need to run star genomeGenerate first to generate the reference genome, ensure ```--sjdbOverhang``` is set to fragment size - 1 
 
 ```
 module load star
 STAR --runMode genomeGenerate --sjdbOverhang 149 --runThreadN 8 --genomeDir ref/mm10STAR --genomeFastaFiles ../../../data/reference//indexes/mouse//mm10/fasta/Mus_musculus.GRCm38.dna.toplevel.fa --sjdbGTFfile ../../../data/reference/gtf/Mus_musculus.GRCm38.90.gtf
 
 ```
-
-```--sjdbOverhang``` is fragment size -1 
 
 Next, align the trimmed Fastq files with STAR, then convert to Bam and index with samtools. These settings are are very low stringency for alignment, as the fragments appear small.
 
