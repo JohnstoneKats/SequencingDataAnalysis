@@ -15,7 +15,7 @@ The software used have been referenced at the end, the majority of this analysis
 For  details of m6a-RIP seq  wetlab protocol see: 
 
 
-### General overview of RNA-seq analysis
+### General overview of m6a-seq analysis
 
 ![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/M6A-seq/m6aOverview.png)
 
