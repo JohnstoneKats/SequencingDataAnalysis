@@ -1,4 +1,4 @@
-# 3' M6A-seq
+# M6A-seq
 
 M6A-seq is similar to meRIP-seq and is a method for quantifying methylation of RNA.
 This walkthrough will outline the general steps of analysing a M6A-seq dataset from fastq files through to figure generation. 
