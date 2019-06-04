@@ -1,7 +1,7 @@
 # ATAC-seq
 
 This walkthrough will outline the general steps of analysing a ATAC-seq dataset from fastq files through to figure generation. 
-see ```--help``` for more available options at each step. 
+Use ```--help``` for more available options with each software. 
 
 If you're just interested in genes which are associated with open chromatin, ATAC-seq analysis is very similar to ChIP-seq.
 More in-depth analysis, such as [footprinting](https://bioinformatics-core-shared-training.github.io/cruk-summer-school-2018/ChIP/Practicals/Practical10_ATAC-seq_analysis_SS.html), can also be performed with high resolution ATAC-seq data but will not be covered herein. 
@@ -11,7 +11,7 @@ More in-depth analysis, such as [footprinting](https://bioinformatics-core-share
 
 ## Getting Started
 
-The following walk-through provides an example of the analysis pipeline for ChIP-seq data. For the purposes of this example, we will be starting with demultiplexed fastq files. These files have been sequenced single ended 75bp at approximately 20 million paired reads per sample. 
+The following walk-through provides an example of the analysis pipeline for ChIP-seq data. For the purposes of this example, we will be starting with demultiplexed fastq files. These samples have been sequenced single ended 75bp at approximately 20 million reads per sample. 
 
 The software used have been referenced at the end, the majority of this analysis is based on the user manuals linked below, with only slight deviations from default settings.
 
@@ -82,7 +82,7 @@ igvtools count -z 5 -w 25 -e 225 ${t}/${x}.sam.sorted.bam.rmdup.bam ${t}/${x}.sa
 ## Peak Calling
 This will produce a bed file of genomic coordinates of identified peaks or enriched regions. The resulting BED file can then be used as input for: peak annotation, motif analysis, differential peak analysis,input for deeptools compute matrix heatmap etc.
 
-### MACS2
+### macs
 [HERE](https://hbctraining.github.io/Intro-to-ChIPseq/lessons/05_peak_calling_macs.html) is a great tutorial for peak calling with MACS. 
 
 *3_MACS2.sbatch*
@@ -117,7 +117,7 @@ You may sometimes have trouble with the homer config directories, try ```-prepar
 ```
 module load homer
 
-findMotifsGenome.pl IPsamplePeaks.bed mm10 IPsample-motif 
+findMotifsGenome.pl ATACPeaks.bed mm10 ATAC-motif 
 ```
 
 ## Generating Figures
@@ -129,23 +129,25 @@ To generate a heatmap with deeptools, you will need: bam files and a reference b
 e.g. you could make a heatmap of H3k27Ac enrichment centered on ATAC peaks
 
 You will first need to make bigwigs of your .bam files of interest. 
+
 ```
 module load deeptools
-bamCoverage -p 8 -e 225 --normalizeUsingRPKM -b IPsample.bam -o IPsample.bw
+bamCoverage -p 8 -e 225 --normalizeUsingRPKM -b ATAC.bam -o ATAC.bw
 ```
 
 Then compute matrix for the regions you want to plot. 
 
-reference-point is best for plotting heatmap of enrichment relative to ATAC peaks. 
+reference-point is best for plotting heatmap of enrichment relative to TSS or ChIP-seq peaks. 
+
 ```
-computeMatrix reference-point -S IPsample.bw  -R ATACpeaksummits.bed -out IPsample-ATAC.gz -b 1000 -a 1000
+computeMatrix reference-point -S IPsample.bw  -R mm10TSS.bed -out ATACatTSS.gz -b 1000 -a 1000
 ```
 
 From the created matrix you can then plot a heatmap:
 *see plotHeatmap --help for more options*
 
 ```
-plotHeatmap -m IPsample-ATAC.gz -out IPsample-ATAC.pdf   
+plotHeatmap -m ATACatTSS.gz -out ATACatTSS.pdf   
 ``` 
 
 
