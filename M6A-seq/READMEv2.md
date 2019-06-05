@@ -8,6 +8,8 @@ This walkthrough will outline the general steps of analysing a M6A-seq dataset f
 
 The following walk-through provides an example of the analysis pipeline for m6a-seq data. For the purposes of this example, we will be starting with demultiplexed fastq files. These files have been sequenced paired end 150bp at approximately 20 million paired reads per sample. 
 
+Both the m6a IP and the total RNA-seq (input) samples are needed for analysis. 
+
 The software used have been referenced at the end, the majority of this analysis is based on the user manuals linked below, with only slight deviations from default settings. 
 
 ### Library preparation
@@ -54,9 +56,7 @@ reshape2/1.4.3
 pheatmap/1.0.12
 
 ## Trimming adapter sequences
-The fastq files need to be trimmed for illumina adapter sequences, and filter the resulting reads based on both quality and length. This can be performed using cutadapt or trimgalore(preferred method).
-
-Input a your R1 files
+The fastq files need to be trimmed for illumina adapter sequences, and filter the resulting reads based on both quality and length. This can be performed using cutadapt or trimgalore(preferred method). Both m6a-IP and input samples are trimmed and mapped the same. 
 
 *1.1_trimgalore*
 
@@ -64,12 +64,7 @@ Input a your R1 files
 module load trimgalore
 module load fastqc
 
-s=$(basename $1)
-t=$(dirname $1)
-x=`echo $s | cut -d "_" -f 1-2`
-
-
-trim_galore --paired -q 30 --length 30 --fastqc ${t}/${x}_R1.fastq.gz ${t}/${x}_R2.fastq.gz -o m6a/trimmed
+trim_galore --paired -q 30 --length 30 --fastqc R1.fastq.gz R2.fastq.gz -o trimmed
 
 ```
 
@@ -77,24 +72,22 @@ trim_galore --paired -q 30 --length 30 --fastqc ${t}/${x}_R1.fastq.gz ${t}/${x}_
 
 ### Optional QC
 
-You can run FastQC both before and after trimming to visualise the effect of trimming:
+You can run FastQC before this step as well to quantify the effect of trimming and filtering:
 
 ```
 module load fastqc
 
-d=$(dirname $1)
-
-echo ${1}
-
-fastqc -o ${d} -f fastq --noextract -t 8 ${1}
+fastqc -o fastqc -f fastq --noextract -t 8 *.fastq.gz
 
 ```
 
 
 ## Aligning Fastq Files
-Fastq files are aligned to the Mouse genome (mm10) using STAR. The resulting sam files are sorted, converted to bam and indexed with samtools. 
+Fastq files are then aligned to the mouse genome (mm10) using STAR. The resulting sam files are sorted, converted to bam and indexed with samtools. 
 
 You will need to run star genomeGenerate first to generate the reference genome, ensure ```--sjdbOverhang``` is set to fragment size - 1 
+Reference files used here are the default reference files in /data/
+
 
 ```
 module load star
@@ -109,14 +102,7 @@ module load star
 module load samtools
 module load igvtools
 
-s=$(basename $1)
-t=$(dirname $1)
-x=`echo $s | cut -d "_" -f 1-2`
-echo $s
-echo $x
-
-
-STAR --outFileNamePrefix ${t}/${x} --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 --outFilterMismatchNmax 2 --outFilterMatchNmin 0 --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --genomeDir ref/mm10STAR --runThreadN 8 --readFilesIn ${t}/${x}_R1.trimmed.fastq.gz.sorted.fastq.gz ${t}/${x}_R2.trimmed.fastq.gz.sorted.fastq.gz
+STAR --outFileNamePrefix Sample1 --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 --outFilterMismatchNmax 2 --outFilterMatchNmin 0 --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --genomeDir ref/mm10STAR --runThreadN 16 --readFilesIn R1_val_1.fq.gz R2_val_1.fq.gz
 
 
 #samtools view -@ 8 -Sbo ${t}/${x}.sam.bam  ${t}/${x}.sam
@@ -125,77 +111,233 @@ samtools rmdup -s ${t}/${x}Aligned.sortedByCoord.out.bam ${t}/${x}.rmdup.bam
 samtools index ${t}/${x}.rmdup.bam ${t}/${x}.rmdup.bam.bai
 ```
 
-*Optional:* QC can be performed on the resulting Bam files using RNAseqc. You will need to input a sample file, which is a tab-delimited text file with 3 columns specifying ID, the filename of bam file, and comments. You will need to download the rRNA reference fileand a gtf reference file in addition to a fasta file of the reference genome. see RNA-SeQC --help for more info. 
+You can then remove duplicates, and generate an IGV viewable wig file
+
+```
+STAR --runMode inputAlignmentsFromBAM --outFileNamePrefix Sample --bamRemoveDuplicatesType UniqueIdentical --outWigType wiggle --outWigStrand Unstranded Sample.Aligned.sortedByCoord.out.bam
+```
+
+IGV tools can also be used to generate a smaller .tdf file for visualisation with IGV
+
+```
+module load igvtools
+
+igvtools count -z 5 -w 25 -e 225 Sample.Aligned.sortedByCoord.out.bam Sample.tdf mm10
+
+```
+
+
+*Optional:* QC can be performed on the resulting Bam files using RNAseqc. You will need to input a sample file, which is a tab-delimited text file with 3 columns specifying ID, the filename of bam file, and comments. You will need to download the rRNA reference fileand a gtf reference file from UCSC table browser in addition to a fasta file of the reference genome. see RNA-SeQC --help for more info. 
 
 ```
 module load rna-seqc
 module load java
 
-RNA-SeQC -s "ID|filename.bam|comments"  -t ref/mm10genes.gtf -o m6a/Fastq/RNAseqc -r data/reference/indexes/mouse/mm10/fasta/Mus_musculus.GRCm38.dna.toplevel.fa -BWArRNA ref/mm10rRNA.fa ${1}
+RNA-SeQC -s "ID|Sample.Aligned.sortedByCoord.out.bam|comments"  -t ref/mm10genes.gtf -o m6a/Fastq/RNAseqc -r data/reference/indexes/mouse/mm10/fasta/Mus_musculus.GRCm38.dna.toplevel.fa -BWArRNA ref/mm10rRNA.fa 
 
-```
-
-IGV tools can also be used to generate a .tdf for visualisation with IGV
-
-```
-module load igvtools
-
-igvtools count -z 5 -w 25 -e 225 ${t}/${x}.rmdup.bam ${t}/${x}.tdf mm10
-
-```
-
-Alternatively, you can also make wiggle file using STAR for visulisation with IGV:
-
-```
-STAR --runMode inputAlignmentsFromBAM --outFileNamePrefix ${t}/${x} --bamRemoveDuplicatesType UniqueIdentical --outWigType wiggle --outWigStrand Stranded ${t}/${x}Aligned.sortedByCoord.out.bam
 ```
 
 
 ### Calling Peaks with MACS2 
 
+Peaks can then be called in the IP sample relative to the input RNA seq sample using macs2. Ensure theGenome size is set to the calculated transcriptome size for the genome used. in this case mm10 transcriptome size is used ( as in [Dominissi et al. 2013](https://www.ncbi.nlm.nih.gov/pubmed/22575960) )
+
 ```
 module load macs
-macs2 callpeak -g mm -f BAMPE -t $1 -c $2 --nomodel --gsize 2.82e8 --extsize 200 --outdir ${s}_macs2 -n ${s}_normpeaks
+macs2 callpeak -g mm -f BAMPE -t IPsample.Aligned.sortedByCoord.out.bam -c Input.Aligned.sortedByCoord.out.bam --nomodel --gsize 2.82e8 --extsize 149 --outdir m6aIP_macs2 -n m6aIP_normpeaks
+```
+### Calling Peaks with exomePeak
+
+suggested that as the samples are paired ( INPUT and IP from same cell pool) that peaks are called first on individual replicates, then merged.
+
+The reference .gtf file needs to have the same chromosome annotation as the aligned bam files ( with or without "chr") 
+
+See [exomePeak] for more info. 
+
+*exomePeak.R*
+
+```
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("exomePeak")
+
+library(exomePeak)
+
+mm10<-"path/mm10mrnaNOCHR.gtf"
+
+ip1 <- "path/IPsample.Aligned.sortedByCoord.out.bam"
+
+input1<- "path/Input.Aligned.sortedByCoord.out.bam"
+
+result=exomepeak(GENE_ANNO_GTF=mm10,IP_BAM = ip1,INPUT_BAM = input1,
+                 EXPERIMENT_NAME="Sample.rep1")
+
+
+```
+
+
+
+### Calling Peaks with meTPeak
+
+Build on exomePeak, MetPeak is run very similar and provides similar results. However, improvements in statistical modelling improves peak calling for low input samples. See [metPeak] for more info. 
+
+```
+library("devtools")
+install_github("compgenomics/MeTPeak",build_opts = c("--no-resave-data", "--no-manual"))
+
+library(MeTPeak)
+
+mm10<-"path/mm10mrnaNOCHR.gtf"
+
+ip1 <- "path/IPsample.Aligned.sortedByCoord.out.bam"
+
+input1<- "path/Input.Aligned.sortedByCoord.out.bam"
+
+metpeak(GENE_ANNO_GTF=gtf,IP_BAM = ip1,INPUT_BAM = input1,
+        EXPERIMENT_NAME="Sample.rep1")
+
+```
+
+### QC with Trumpet
+Again, is built on exome peak and runs very similarly. Produces some useful QC files, however does not perform comparative analysis. See [Trumpet] for more info
+
+```
+library("devtools")
+
+install_github("skyhorsetomoon/Trumpet",build_opts = c("--no-resave-data", "--no-manual"))
+
+library(Trumpet)
+
+trumpet_report <- Trumpet_report(IP_BAM = ip_bam, Input_BAM = input_bam, 
+                                 contrast_IP_BAM = contrast_ip_bam, contrast_Input_BAM = contrast_input_bam, 
+                                 condition1 = "untreated", condition2 = "treat", GENE_ANNO_GTF = gtf)
+
+browseURL("Trumpet_report.html")
+
+
 ```
 
 ### Counting Reads
 
-The resulting bam files can then be used as input into subread's *featureCounts* function:
-*The unstranded option is generally used to improve mapping rate, but this can be altered by changing -s 1*
+The resulting bam files could also then be used as input into subread's *featureCounts* function
+*The unstranded option is generally used but this can be altered by changing -s 1 if the stranded option was used in the mapping steps above*
+
+*featurecounts.sbatch*
 
 ```
 module load subread
 
 featureCounts -t exon -g gene_id -F 'GTF/GFF' -O -M -s 0 -a data/reference/gtf/Mus_musculus.GRCm38.90.gtf  -o counts.txt *.sorted.bam
-```
-
-## Differential RNA Methylation Analysis
-
-### Calling peaks with exomePeak
-
-The remaining analysis and figure generation can be performed in R. 
-
-
-```
-source("http://bioconductor.org/biocLite.R")
-biocLite("edgeR")
-
-library(ggrepel)
 
 ```
 
+
+## Differential m6a Analysis
+
+### Using Bedtools Intersect 
+
+Determnine which peaks are overlapping in two replicates 
+
+```
+module load bedtools
+bedtools intersect -a IPsampleREP1.peaks.bed -b IPsampleREP2.peaks.bed > samplecombined.peaks.bed
+```
+
+Then, determine which peaks are overlapping/unique between 2 samples
+
+```
+module load bedtools
+bedtools intersect -wao -a samplecombined.peaks.bed -b treated.samplecombined.peaks.bed > diffpeaks.bed
+```
+
+#### Annotate peaks 
+
+with homer 
+
+```
+annotatePeaks.pl IPsample.peaks.bed mm10 > ${1}tagdir/peaksannotated.txt
+```
+*Note: you may have to add "chr" to chromosome notation first using ```awk '{print "chr"$0}' peaks.bed > peaks.chr.bed```*
+
+
+with bedtools closest 
+
+```
+bedtools closest -D -a IPsample.peaks.bed -b mm10TSS.bed > IPpeaksmm10TSS.bed
+```
+
+
+
+### Quantitative differential peak analysis with replicates with MeTPeak 
+
+
+```
+
+ip1 <- "path/IP.rep1.Aligned.sortedByCoord.out.bam"
+ip2 <- "path/IP.rep2.Aligned.sortedByCoord.out.bam"
+ip3 <- "path/treated.IP.rep1.Aligned.sortedByCoord.out.bam"
+ip4 <- "path/treated.IP.rep2.Aligned.sortedByCoord.out.bam"
+
+input1 <- "path/INPUT.rep1.Aligned.sortedByCoord.out.bam"
+input2 <- "path/INPUT.rep2.Aligned.sortedByCoord.out.bam"
+input3 <- "path/treated.INPUT.rep1.Aligned.sortedByCoord.out.bam"
+input4 <- "path/treated.INPUT.rep2.Aligned.sortedByCoord.out.bam"
+
+IP_BAM <- c(ip1,ip2)
+INPUT_BAM <- c(input1,input2)
+TREATED_IP_BAM<-c(ip3,ip4)
+TREATED_INPUT_BAM<-c(input3,input4) 
+
+diff.peaks=metPeak(GENE_ANNO_GTF=mm10,IP_BAM = IP_BAM,INPUT_BAM = INPUT_BAM,
+                 EXPERIMENT_NAME="diffPeaks")
+                 
+                 
+```
+
+### Differential peak analysis with count-based methods
+
+#### Csaw
+
+
+```
+
+```
+
+#### Limma-Voom
 Read in the counts table generated above: 
-
 ```
 
 ```
+
+
+
+
 
 ## Generating plots
 
 MD plot
+
 ```
 plotMD(fit.cont,coef=1,status=summa.fit)
 
+```
+
+### Metagene plots
+
+**Deeptools**
+
+```
+```
+
+**Guitar** 
+
+```
+```
+
+**metaplotR**
+
+```
 ```
 
 
@@ -213,7 +355,11 @@ plotMD(fit.cont,coef=1,status=summa.fit)
 
 [Combine RNA-seq tutorial](http://combine-australia.github.io/RNAseq-R/)
 
+[exomePeak Github]
 
+[metPeak Github]
+
+[Trumpet Github]
 
 
 ## References
