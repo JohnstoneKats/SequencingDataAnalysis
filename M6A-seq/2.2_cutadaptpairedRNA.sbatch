@@ -3,10 +3,10 @@
 #SBATCH --ntasks=16
 #SBATCH --mem-per-cpu=64G
 #SBATCH --time=2:00:00   
-# SBATCH --output=%j.stdout
-# SBATCH --error=%j.error
+#SBATCH --output=%j.stdout
+#SBATCH --error=%j.error
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=madison.kelly@petermac.org
+#SBATCH --mail-user=user.name@petermac.org
 #SBATCH --partition=prod_short
  
 module load cutadapt
