@@ -102,27 +102,22 @@ module load star
 module load samtools
 module load igvtools
 
-STAR --outFileNamePrefix Sample1 --outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 --outFilterMismatchNmax 2 --outFilterMatchNmin 0 --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --genomeDir ref/mm10STAR --runThreadN 16 --readFilesIn R1_val_1.fq.gz R2_val_1.fq.gz
+STAR --outFileNamePrefix Sample1 --outFilterScoreMinOverLread 0.2 --outFilterMatchNminOverLread 0.2 --outFilterMismatchNmax 2 --outFilterMatchNmin 0 --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --genomeDir ref/mm10STAR --runThreadN 16 --readFilesIn R1_val_1.fq.gz R2_val_2.fq.gz
 
-
-#samtools view -@ 8 -Sbo ${t}/${x}.sam.bam  ${t}/${x}.sam
-#samtools sort -@ 8 -o .${t}/${x}sam.sorted.bam ${t}/${x}.sam.bam
-samtools rmdup -s ${t}/${x}Aligned.sortedByCoord.out.bam ${t}/${x}.rmdup.bam
-samtools index ${t}/${x}.rmdup.bam ${t}/${x}.rmdup.bam.bai
 ```
 
 You can then remove duplicates, and generate an IGV viewable wig file
 
 ```
-STAR --runMode inputAlignmentsFromBAM --outFileNamePrefix Sample --bamRemoveDuplicatesType UniqueIdentical --outWigType wiggle --outWigStrand Unstranded Sample.Aligned.sortedByCoord.out.bam
-```
+STAR --runMode inputAlignmentsFromBAM --outFileNamePrefix Sample --outWigNorm RPM --bamRemoveDuplicatesType UniqueIdentical --outWigType wiggle --outWigStrand Unstranded Sample.Aligned.sortedByCoord.out.bam
 
-IGV tools can also be used to generate a smaller .tdf file for visualisation with IGV
+```
+IGV tools can also be used to generate a smaller .tdf file for visualisation with IGV:
 
 ```
 module load igvtools
 
-igvtools count -z 5 -w 25 -e 225 Sample.Aligned.sortedByCoord.out.bam Sample.tdf mm10
+igvtools count -z 5 -w 25 -e 149 Sample.Aligned.sortedByCoord.out.bam Sample.tdf mm10
 
 ```
 
@@ -148,11 +143,11 @@ macs2 callpeak -g mm -f BAMPE -t IPsample.Aligned.sortedByCoord.out.bam -c Input
 ```
 ### Calling Peaks with exomePeak
 
-suggested that as the samples are paired ( INPUT and IP from same cell pool) that peaks are called first on individual replicates, then merged.
+As the samples are paired (INPUT and IP from same cell pool) it is suggested that peaks are called first on individual replicates, then merged.
 
-The reference .gtf file needs to have the same chromosome annotation as the aligned bam files ( with or without "chr") 
+The reference .gtf file needs to have the same chromosome annotation as the aligned bam files ( i.e. with or without "chr") 
 
-See [exomePeak] for more info. 
+See [exomePeak](https://github.com/ZhenWei10/exomePeak) for more info. 
 
 *exomePeak.R*
 
@@ -177,10 +172,9 @@ result=exomepeak(GENE_ANNO_GTF=mm10,IP_BAM = ip1,INPUT_BAM = input1,
 ```
 
 
-
 ### Calling Peaks with meTPeak
 
-Build on exomePeak, MetPeak is run very similar and provides similar results. However, improvements in statistical modelling improves peak calling for low input samples. See [metPeak] for more info. 
+Build on exomePeak, MetPeak is run very similar and provides similar results. However, improvements in statistical modelling improves peak calling for low input samples. See [metPeak](https://github.com/compgenomics/MeTPeak) for more info. 
 
 ```
 library("devtools")
@@ -200,7 +194,7 @@ metpeak(GENE_ANNO_GTF=gtf,IP_BAM = ip1,INPUT_BAM = input1,
 ```
 
 ### QC with Trumpet
-Again, is built on exome peak and runs very similarly. Produces some useful QC files, however does not perform comparative analysis. See [Trumpet] for more info
+Again, is built on exome peak and runs very similarly. Produces some useful QC files, however does not perform comparative analysis. See [Trumpet](https://github.com/skyhorsetomoon/Trumpet) for more info
 
 ```
 library("devtools")
@@ -220,7 +214,7 @@ browseURL("Trumpet_report.html")
 
 ### Counting Reads
 
-The resulting bam files could also then be used as input into subread's *featureCounts* function
+The resulting bam files can also then be used as input into subread's *featureCounts* function
 *The unstranded option is generally used but this can be altered by changing -s 1 if the stranded option was used in the mapping steps above*
 
 *featurecounts.sbatch*
@@ -355,11 +349,11 @@ plotMD(fit.cont,coef=1,status=summa.fit)
 
 [Combine RNA-seq tutorial](http://combine-australia.github.io/RNAseq-R/)
 
-[exomePeak Github]
+[exomePeak Github](https://github.com/ZhenWei10/exomePeak)
 
-[metPeak Github]
+[metPeak Github](https://github.com/compgenomics/MeTPeak)
 
-[Trumpet Github]
+[Trumpet Github](https://github.com/skyhorsetomoon/Trumpet)
 
 
 ## References
