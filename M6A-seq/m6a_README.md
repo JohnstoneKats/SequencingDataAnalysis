@@ -83,11 +83,10 @@ fastqc -o fastqc -f fastq --noextract -t 8 *.fastq.gz
 
 
 ## Aligning Fastq Files
-Fastq files are then aligned to the mouse genome (mm10) using STAR. The resulting sam files are sorted, converted to bam and indexed with samtools. 
+Fastq files are then aligned to the mouse genome (mm10) using STAR. The resulting sam files are sorted, converted to bam, duplicates removed and indexed with samtools. 
 
 You will need to run star genomeGenerate first to generate the reference genome, ensure ```--sjdbOverhang``` is set to fragment size - 1 
 Reference files used here are the default reference files in /data/
-
 
 ```
 module load star
@@ -95,7 +94,7 @@ STAR --runMode genomeGenerate --sjdbOverhang 149 --runThreadN 8 --genomeDir ref/
 
 ```
 
-Next, align the trimmed Fastq files with STAR, then convert to Bam and index with samtools. These settings are are very low stringency for alignment, as the fragments appear small.
+Next, the trimmed Fastq files are aligned with STAR, which converts to Bam and sorts. These settings are are very low stringency for alignment, as the fragments appear small.
 
 ```
 module load star
@@ -106,23 +105,31 @@ STAR --outFileNamePrefix Sample1 --outFilterScoreMinOverLread 0.2 --outFilterMat
 
 ```
 
-You can then remove duplicates, and generate an IGV viewable wig file
+Samtools is then used to remove dupliates and to index: 
 
 ```
-STAR --runMode inputAlignmentsFromBAM --outFileNamePrefix Sample --outWigNorm RPM --bamRemoveDuplicatesType UniqueIdentical --outWigType wiggle --outWigStrand Unstranded Sample.Aligned.sortedByCoord.out.bam
+module load samtools
+
+samtools rmdup -s sample.combinedAligned.sortedByCoord.out.bam sample.sortedByCoord.rmdup.bam
+
+samtools index sample.sortedByCoord.rmdup.bam sample.sortedByCoord.rmdup.bam.bai
 
 ```
-IGV tools can also be used to generate a smaller .tdf file for visualisation with IGV:
+
+an IGV viewable TDF can be created with igvtools
+
+*ext size should be fragment length- read length, however it is difficult to calculate fraglength of RNA derived reads so ext is currently set to 0*
 
 ```
 module load igvtools
 
-igvtools count -z 5 -w 25 -e 149 Sample.Aligned.sortedByCoord.out.bam Sample.tdf mm10
+igvtools count -z 5 -w 25 sample.sortedByCoord.rmdup.bam sample.sortedByCoord.rmdup.bam.tdf mm10
 
 ```
 
-
 *Optional:* QC can be performed on the resulting Bam files using RNAseqc. You will need to input a sample file, which is a tab-delimited text file with 3 columns specifying ID, the filename of bam file, and comments. You will need to download the rRNA reference fileand a gtf reference file from UCSC table browser in addition to a fasta file of the reference genome. see RNA-SeQC --help for more info. 
+
+*?may need to add readgroups using picard before RNAseqc will work?*
 
 ```
 module load rna-seqc
@@ -320,8 +327,22 @@ plotMD(fit.cont,coef=1,status=summa.fit)
 ### Metagene plots
 
 **Deeptools**
+compare the ip with the input
 
 ```
+bamcompare -b1 sample1.sortedByCoord.out.bam.rmdup.bam -b2 input1.sortedByCoord.out.bam.rmdup.bam -o samplecompare1.bw -of bigwig
+```
+
+Compute matrix based on gene body coordinates:
+
+```
+
+```
+
+Plot the resulting matrix to visualise m6a enrichment:
+
+```
+
 ```
 
 **Guitar** 
