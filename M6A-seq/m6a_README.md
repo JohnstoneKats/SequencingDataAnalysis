@@ -219,6 +219,24 @@ browseURL("Trumpet_report.html")
 
 ```
 
+
+#### Annotate peaks 
+
+with homer 
+
+```
+annotatePeaks.pl IPsample.peaks.bed mm10 -annStats IPsample.annstats.txt > IPsample.peaks.ann.bed
+
+```
+*Note: you may have to add "chr" to the bed file chromosome notation first using ```awk '{print "chr"$0}' peaks.bed > peaks.chr.bed```*
+
+
+with bedtools closest 
+
+```
+bedtools closest -D -a IPsample.peaks.bed -b mm10TSS.bed > IPpeaksmm10TSS.bed
+```
+
 ### Counting Reads
 
 The resulting bam files can also then be used as input into subread's *featureCounts* function
@@ -229,10 +247,9 @@ The resulting bam files can also then be used as input into subread's *featureCo
 ```
 module load subread
 
-featureCounts -t exon -g gene_id -F 'GTF/GFF' -O -M -s 0 -a data/reference/gtf/Mus_musculus.GRCm38.90.gtf  -o counts.txt *.sorted.bam
+featureCounts -t exon -g gene_id -F 'GTF/GFF' -O -M -s 0 -p -T 8 -a data/reference/gtf/Mus_musculus.GRCm38.90.gtf  -o counts.txt *.sorted.bam
 
 ```
-
 
 ## Differential m6a Analysis
 
@@ -252,21 +269,6 @@ module load bedtools
 bedtools intersect -wao -a samplecombined.peaks.bed -b treated.samplecombined.peaks.bed > diffpeaks.bed
 ```
 
-#### Annotate peaks 
-
-with homer 
-
-```
-annotatePeaks.pl IPsample.peaks.bed mm10 > ${1}tagdir/peaksannotated.txt
-```
-*Note: you may have to add "chr" to chromosome notation first using ```awk '{print "chr"$0}' peaks.bed > peaks.chr.bed```*
-
-
-with bedtools closest 
-
-```
-bedtools closest -D -a IPsample.peaks.bed -b mm10TSS.bed > IPpeaksmm10TSS.bed
-```
 
 
 
