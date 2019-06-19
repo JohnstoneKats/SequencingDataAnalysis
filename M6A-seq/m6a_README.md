@@ -228,7 +228,7 @@ with homer
 annotatePeaks.pl IPsample.peaks.bed mm10 -annStats IPsample.annstats.txt > IPsample.peaks.ann.bed
 
 ```
-*Note: you may have to add "chr" to the bed file chromosome notation first using ```awk '{print "chr"$0}' peaks.bed > peaks.chr.bed```*
+*Note: Depending on the reference genome used, you may have to add "chr" to the bed file chromosome notation first using ```awk '{print "chr"$0}' peaks.bed > peaks.chr.bed```*
 
 
 with bedtools closest 
@@ -236,6 +236,16 @@ with bedtools closest
 ```
 bedtools closest -D -a IPsample.peaks.bed -b mm10TSS.bed > IPpeaksmm10TSS.bed
 ```
+
+#### Motif analysis
+
+with homer 
+
+```
+findMotifsGenome.pl peakfile.bed mm10 peakMotifanalysis
+```
+*note: If using on the cluster may need to set '''-preparsedDir dir/'''
+
 
 ### Counting Reads
 
