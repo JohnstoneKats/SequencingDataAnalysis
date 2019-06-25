@@ -1,18 +1,19 @@
 library(csaw)
 library(pheatmap)
 library(ggpubr)
+librbary(ggplot2)
 library(reshape2)
 library(GenomicRanges)
 library(genomation)
 
-bamfiles <- list.files( pattern = ".bam$")
-data_all <- windowCounts(bamfiles[c(1:5,21)], ext=200, width=1000,bin=T)
+bamfiles <- list.files(pattern = ".bam$")
+data_all <- windowCounts(bamfiles, ext=200, width=1000,bin=T)
 
 #filter out low logcpm values
 data_keep<- aveLogCPM(asDGEList(data_all)) >= 0
 data_all <- data_all[data_keep,]
 
-#filter out anything which doesn't surpass input (with FC of >3)
+#filter out anything which doesn't surpass input (with FC of >3)(where sample #6 is input)
 input<-data_all [,6]
 IP<-data_all [,c(1:5)]
 filter.stat<-filterWindows(IP, input, type="control",prior.count =5,norm.fac=list(IP, input))
@@ -27,7 +28,7 @@ totals <- data@colData$totals
 x<-data@rowRanges
 
 #make sample info 
-SI<-matrix(data = NA,nrow=5,ncol=2)
+SI<-matrix(data = 5,nrow=ncol(,ncol=2)
 SI[,1]<-c(1:5)
 SI[,2]<-c("B","B","B","A","A")
 colnames(SI)<-c("Sample","Treatment")
@@ -42,9 +43,8 @@ colnames(design) <- levels(group)
 cont.matrix <- makeContrasts(AvsB =B-A,
                              levels=design)
 
-
-
 norm <- normOffsets(data, lib.sizes=totals)
+           
 y <- asDGEList(data, norm.factors=norm)
 
 y <- estimateDisp(y, design,trend.method = "loess")
@@ -52,6 +52,7 @@ y <- estimateDisp(y, design,trend.method = "loess")
 fit <- glmQLFit(y, design, robust=TRUE)
 
 results <- glmQLFTest(fit,contrast = cont.matrix)
+           
 Results<-results$table
 
 adj.counts<- cpm(y, log=TRUE)
@@ -91,7 +92,7 @@ merged <- mergeWindows(rowRanges(data), tol=100L)
 tabcom <- combineTests(merged$id, results$table)
 tabcom1 <- cbind(tabcom,merged$region)
 
-#########ggplot boxplot ##########
+#########ggplot boxplot of ip enrichment at top 100 differential locations##########
 boxplot(adj.counts_sortedbypvalue[1:100,])
 boxplotshort<-as.data.frame(t(adj.counts_sortedbypvalue[1:100,]))
 boxplotshort$group<-c("B","B","B","A","A")
@@ -120,16 +121,14 @@ f<-as(x,"GRanges")
 filter4melocation<-merged4melocation[merged4melocation$PValue<0.01,11:15]
 q<-as(filter4melocation,"GRanges")
 
-refseq_mm10<-readTranscriptFeatures("/home/mkelly/research/mm10 genes (1).bed")
+refseq_mm10<-readTranscriptFeatures("path/mm10referenceGenome.bed")
 
 anot = annotateWithGeneParts(y,refseq_mm10)
 
 plotTargetAnnotation(anot ,precedence=TRUE,
-                     main="differential ub location", cex.legend = 0.6)
+                     main="differential location", cex.legend = 0.6)
 
 #annotate with h3k4me3 or h3k27me3 overlap
-
-anotk27<-annotateWithFeature(l,y)
 
 
 
