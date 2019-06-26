@@ -1,4 +1,4 @@
-# Methods
+# ATAC-seq Methods
 
 *For publication purposes* 
 
