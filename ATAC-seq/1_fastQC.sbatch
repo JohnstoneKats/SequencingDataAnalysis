@@ -11,6 +11,6 @@
  
 module load fastqc
 
-fastqc -o ${d} -f fastq --noextract -t 8 ${1}
+fastqc -o fastQC -f fastq --noextract -t 8 ${1}
 
 
