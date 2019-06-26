@@ -44,31 +44,29 @@ BSgenome/1.52.0
 pheatmap/1.0.12
 
 
-## Aligning Fastq Files
+## Trimming and Aligning Fastq Files
 
-### Trimming fastq files
+### Trimming
 
 The first step is to trim the ends of the reads, trimming 2bp off the 3' end or the 5' end off the strand negated the bias introduced by end filling with unmethylated C's during the end repair step. 
 
+[2_RRBStrim_galore.sbatch](2_RRBStrim_galore.sbatch)
 
 ```
 module load trimgalore
 
-s=$(basename $1)
-t=$(dirname $1)
-x=`echo $s | cut -d "_" -f 1-2`
-
-trim_galore --paired --rrbs ${t}/${x}_R1_001.fastq.gz ${t}/${x}_R2_001.fastq.gz -o ${t}
+trim_galore --paired --rrbs Sample_R1_001.fastq.gz Sample_R2_001.fastq.gz -o trimGalore
 ```
 
-### Aligning fastq files
+### Alignment
 
 The next step is to align to the genome, and assess the methylation percentage
 see here: for additional information on how bismark works: 
 
 The input for this step is the trimmed and validated files generated from trim_galore! above. 
-The method outlined below first aligns in a paired end manner, then saves discordant reads as separate R1 and R2 fastq ffiles, then alignes these leftover reads using single end settings, ensuring that R2 is aligned to the reverse compliment
+The method outlined below first aligns in a paired end manner, then saves discordant reads as separate R1 and R2 fastq ffiles, then alignes these leftover reads using single end settings, ensuring that R2 is aligned to the reverse compliment. For other SE or normal PE alingment with bowtie see [3.3_RRBSPEalignOriginal.sbatch](3.3_RRBSPEalignOriginal.sbatch) or [3.2_RBSSEalign.sbath](3.2_RBSSEalign.sbatch).
 
+[3.1_RRBSPEalign.sbatch](3.1_RRBSPEalign.sbatch)
 ```
 module load bismark
 
@@ -79,32 +77,34 @@ x=`echo $s | cut -d "_" -f 1-2`
 echo $s
 echo $x
 
-bismark --unmapped -X 1000 --multicore 4 ../../../data/reference/indexes/mouse/mm10/bowtie2/ -1 ${t}/${x}_R1_001_val_1.fq.gz -2 ${t}/${x}_R2_001_val_2.fq.gz
+bismark --unmapped -X 1000 --multicore 4 /data/reference/indexes/mouse/mm10/bowtie2/ -1 trimGalore/Sample_R1_001_val_1.fq.gz -2 trimGalore/Sample_R2_001_val_2.fq.gz
 
-bismark --multicore 4 ../../../data/reference/indexes/mouse/mm10/bowtie2/ ${x}_R1_001_val_1.fq.gz_unmapped_reads_1.fq.gz
+bismark --multicore 4 /data/reference/indexes/mouse/mm10/bowtie2/ trimGalore/Sample_R1_001_val_1.fq.gz_unmapped_reads_1.fq.gz
 
-bismark --multicore 4 --pbat ../../../data/reference/indexes/mouse/mm10/bowtie2 ${x}_R2_001_val_2.fq.gz_unmapped_reads_2.fq.gz
+bismark --multicore 4 --pbat /data/reference/indexes/mouse/mm10/bowtie2 trimGalore/Sample_R2_001_val_2.fq.gz_unmapped_reads_2.fq.gz
 
 ```
 
-This will leave you with 3 files (paired end alignments, and single end alignments. these are then pasted together, sorted and converted to bam files and indexed using samtools. 
+This will leave you with 3 files (paired end alignments, and single end alignments. These can then be pasted together, sorted, converted to bam files and indexed using samtools. 
 
 ```
 module load samtools
 
-samtools merge ${x}merged.bam ${x}_R1_001_val_1_bismark_bt2_pe.bam ${x}_R1_001_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam ${x}_R2_001_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam
+samtools merge Sample.merged.bam Sample_R1_001_val_1_bismark_bt2_pe.bam Sample_R1_001_val_1.fq.gz_unmapped_reads_1_bismark_bt2.bam Sample_R2_001_val_2.fq.gz_unmapped_reads_2_bismark_bt2.bam
 
-samtools sort ${x}merged.bam > ${x}mergedsort.bam
+samtools sort Sample.merged.bam > Sample.merged.sort.bam
 
-samtools index ${x}mergedsort.bam
+samtools index Sample.merged.sort.bam
 ```
 
-### generating bedgraphs for Visualisation
+### Generating bedgraphs for visualisation in IGV
 
 Input is the merged .sam files generated above. Output can be loaded into IGV or UCSC genome browser. 
 
+[4_RRBS_bedgraph.sbatch](4_RRBS_bedgraph.sbatch)
+
 ```
-bismark_methylation_extractor --bedgraph ${1}
+bismark_methylation_extractor --bedgraph Sample.merged.sort.bam
 ```
 
 ## Differential Methylation Analysis
@@ -115,6 +115,8 @@ The remaining analysis and plots can be performed in R
 
 first, load in bam files and write to methylkit.txt files for easy access later. 
 .BAM files will need to be in the sam folder as indexed .BAI files
+
+[5_methylkit.R](5_methylkit.R)
 
 ```
 library(methylKit)
