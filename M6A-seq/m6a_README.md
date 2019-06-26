@@ -58,7 +58,7 @@ pheatmap/1.0.12
 ## Trimming adapter sequences
 The fastq files need to be trimmed for illumina adapter sequences, and filter the resulting reads based on both quality and length. This can be performed using cutadapt or trimgalore(preferred method). Both m6a-IP and input samples are trimmed and mapped the same. 
 
-*1.1_trimgalore*
+[2.1_trimgalore.sbatch](2.1_trimgalore.sbatch)
 
 ```
 module load trimgalore
@@ -81,20 +81,21 @@ fastqc -o fastqc -f fastq --noextract -t 8 *.fastq.gz
 
 ```
 
-
 ## Aligning Fastq Files
 Fastq files are then aligned to the mouse genome (mm10) using STAR. The resulting sam files are sorted, converted to bam, duplicates removed and indexed with samtools. 
 
 You will need to run star genomeGenerate first to generate the reference genome, ensure ```--sjdbOverhang``` is set to fragment size - 1 
 Reference files used here are the default reference files in /data/
 
+c
 ```
 module load star
 STAR --runMode genomeGenerate --sjdbOverhang 149 --runThreadN 8 --genomeDir ref/mm10STAR --genomeFastaFiles ../../../data/reference//indexes/mouse//mm10/fasta/Mus_musculus.GRCm38.dna.toplevel.fa --sjdbGTFfile ../../../data/reference/gtf/Mus_musculus.GRCm38.90.gtf
-
 ```
 
-Next, the trimmed Fastq files are aligned with STAR, which converts to Bam and sorts. These settings are are very low stringency for alignment, as the fragments appear small.
+Next, the trimmed Fastq files are aligned with STAR, which also converts to Bam and sorts. These settings are are very low stringency for alignment, as the fragments appear small.
+
+[3_STARalignmm10PE.sbatch](3_STARalignmm10PE.sbatch)
 
 ```
 module load star
@@ -104,7 +105,6 @@ module load igvtools
 STAR --outFileNamePrefix Sample1 --outFilterScoreMinOverLread 0.2 --outFilterMatchNminOverLread 0.2 --outFilterMismatchNmax 2 --outFilterMatchNmin 0 --readFilesCommand zcat --outSAMtype BAM SortedByCoordinate --genomeDir ref/mm10STAR --runThreadN 16 --readFilesIn R1_val_1.fq.gz R2_val_2.fq.gz
 
 ```
-
 Samtools is then used to remove dupliates and to index: 
 
 ```
@@ -144,6 +144,7 @@ RNA-SeQC -s "ID|Sample.Aligned.sortedByCoord.out.bam|comments"  -t ref/mm10genes
 
 Peaks can then be called in the IP sample relative to the input RNA seq sample using macs2. Ensure theGenome size is set to the calculated transcriptome size for the genome used. in this case mm10 transcriptome size is used ( as in [Dominissi et al. 2013](https://www.ncbi.nlm.nih.gov/pubmed/22575960) )
 
+[5_MACS2m6a.sbatch](5_MACS2m6a.sbatch)
 ```
 module load macs
 macs2 callpeak -g mm -f BAMPE -t IPsample.Aligned.sortedByCoord.out.bam -c Input.Aligned.sortedByCoord.out.bam --nomodel --gsize 2.82e8 --extsize 149 --outdir m6aIP_macs2 -n m6aIP_normpeaks
@@ -183,6 +184,7 @@ result=exomepeak(GENE_ANNO_GTF=mm10,IP_BAM = ip1,INPUT_BAM = input1,
 
 Build on exomePeak, MetPeak is run very similar and provides similar results. However, improvements in statistical modelling improves peak calling for low input samples. See [metPeak](https://github.com/compgenomics/MeTPeak) for more info. 
 
+*MetPeak.R*
 ```
 library("devtools")
 install_github("compgenomics/MeTPeak",build_opts = c("--no-resave-data", "--no-manual"))
@@ -222,7 +224,7 @@ browseURL("Trumpet_report.html")
 
 #### Annotate peaks 
 
-with homer 
+**with homer**
 
 ```
 annotatePeaks.pl IPsample.peaks.bed mm10 -annStats IPsample.annstats.txt > IPsample.peaks.ann.bed
@@ -231,7 +233,7 @@ annotatePeaks.pl IPsample.peaks.bed mm10 -annStats IPsample.annstats.txt > IPsam
 *Note: Depending on the reference genome used, you may have to add "chr" to the bed file chromosome notation first using ```awk '{print "chr"$0}' peaks.bed > peaks.chr.bed```*
 
 
-with bedtools closest 
+**with bedtools closest** 
 
 ```
 bedtools closest -D -a IPsample.peaks.bed -b mm10TSS.bed > IPpeaksmm10TSS.bed
@@ -239,7 +241,7 @@ bedtools closest -D -a IPsample.peaks.bed -b mm10TSS.bed > IPpeaksmm10TSS.bed
 
 #### Motif analysis
 
-with homer 
+**with homer**
 
 ```
 findMotifsGenome.pl peakfile.bed mm10 peakMotifanalysis
@@ -278,8 +280,6 @@ Then, determine which peaks are overlapping/unique between 2 samples
 module load bedtools
 bedtools intersect -wao -a samplecombined.peaks.bed -b treated.samplecombined.peaks.bed > diffpeaks.bed
 ```
-
-
 
 
 ### Quantitative differential peak analysis with replicates with MeTPeak 
