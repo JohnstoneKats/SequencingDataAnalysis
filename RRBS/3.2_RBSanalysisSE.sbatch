@@ -6,8 +6,7 @@
 #SBATCH --output=%j.stdout
 #SBATCH --error=%j.error
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=madison.kelly@petermac.org
-# SBATCH --workdir=$1
+#SBATCH --mail-user=user.name@petermac.org
 #SBATCH --partition=prod
 
 module load bowtie2
