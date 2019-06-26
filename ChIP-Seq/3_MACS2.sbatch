@@ -19,6 +19,8 @@ echo $s
 echo $1 
 
 
-macs2 callpeak -g mm -f BAM -t $1 -c 181104_MK26RNA/SRA/SRR2132490.fastq.gz.sam.sorted.bam.rmdup.bam --extsize 225 --broad -q 0.01 --broad-cutoff 0.1 --cutoff-analysis --outdir ${1}BROADq01q1macs2 -n ${s}BROADq01q1peaks
+macs2 callpeak -g mm -f BAM -t $1 -c Sample.sorted.rmdup.bam --outdir ${1}_macs -n ${s}peaks
 
+# or for broad peaks use
+# macs2 callpeak -g mm -f BAM -t $1 -c Sample.sorted.rmdup.bam --broad -q 0.01 --cutoff-analysis --outdir ${1}BROADq01_macs2 -n ${s}BROADq01_peaks
 
