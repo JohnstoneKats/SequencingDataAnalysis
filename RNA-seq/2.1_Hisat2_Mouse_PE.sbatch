@@ -20,10 +20,10 @@ x=`echo $s | cut -d "_" -f 1-2`
 echo $s
 echo $x
 
-hisat2 -p 16 -x /./researchers/stephin.vervoort/HG19_ERCC_hisat2/Homo_sapiens_GRCh37.73.dna.toplevel_ERCC92 -1 ${t}/${x}_R1_001.fastq.gz -2 ${t}/${x}_R2_001.fastq.gz -S stephinINTS6RNA/${x}_hisat2.sam
-samtools view -@ 16 -Sbo stephinINTS6RNA/${x}_hisat2.sam.bam stephinINTS6RNA/${x}_hisat2.sam
-samtools sort -@ 16 -o stephinINTS6RNA/${x}_hisat2.sam.sorted.bam stephinINTS6RNA/${x}_hisat2.sam.bam
-samtools index stephinINTS6RNA/${x}_hisat2.sam.sorted.bam stephinINTS6RNA/${x}_hisat2.sam.sorted.bam.bai
-igvtools count -z 5 -w 25 stephinINTS6RNA/${x}_hisat2.sam.sorted.bam stephinINTS6RNA/${x}.tdf hg19
+hisat2 -p 16 -x /data/reference/indexes/mouse/mm10/bowtie2/Mus_musculus.GRCm38.dna.toplevel -1 ${t}/${x}_R1_001.fastq.gz -2 ${t}/${x}_R2_001.fastq.gz -S ${t}/${x}_hisat2.sam
+samtools view -@ 16 -Sbo ${t}/${x}_hisat2.sam.bam ${t}/${x}_hisat2.sam
+samtools sort -@ 16 -o ${t}/${x}_hisat2.sam.sorted.bam ${t}/${x}_hisat2.sam.bam
+samtools index ${t}/${x}_hisat2.sam.sorted.bam ${t}/${x}_hisat2.sam.sorted.bam.bai
+igvtools count -z 5 -w 25 ${t}/${x}_hisat2.sam.sorted.bam ${t}/${x}.tdf mm10
 
 
