@@ -128,7 +128,5 @@ anot = annotateWithGeneParts(y,refseq_mm10)
 plotTargetAnnotation(anot ,precedence=TRUE,
                      main="differential location", cex.legend = 0.6)
 
-#annotate with h3k4me3 or h3k27me3 overlap
-
 
 
