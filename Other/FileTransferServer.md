@@ -1,5 +1,6 @@
-# Uploading Files to the transfer server 
+# Uploading Files to the melbourne uni transfer server 
 
-```
-scp -r -i ~/.ssh/id_transfer $1 transfer@115.146.91.86:/data/transfer/madison.kelly/
-```
+You will need to [request access](https://atlassian.petermac.org.au/jira/servicedesk/customer/portal/2) for this server.
+
+For PeterMac users see [here](https://atlassian.petermac.org.au/confluence/display/BIOIN/File+Transfer+systems) for detailed instructions
+
