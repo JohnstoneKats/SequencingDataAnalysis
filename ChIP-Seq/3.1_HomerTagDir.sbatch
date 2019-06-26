@@ -17,12 +17,18 @@ s=$(basename $1)
 
 echo $1
 
-
+#input as sam file, so first convert processed bam to sam
 samtools view -h $1 > ${1}.sam
 makeTagDirectory ${s}tagdir/ ${1}.sam -format sam
+
+#need to specify tag directory of input 
 findPeaks ${1}tagdir -style factor -o auto -i inputtagdir/
 pos2bed.pl -o ${1}tagdir/peaks.bed ${1}tagdir/peaks.txt
-awk '{print "chr"$0}' ${1}tagdir/peaks.bed > ${1}tagdir/peaks.bed.chr.bed
-annotatePeaks.pl ${1}tagdir/peaks.bed.chr.bed mm10 > ${1}tagdir/peaksannotated.txt
+
+#add "chr" if using reference files without chr
+awk '{print "chr"$0}' ${1}tagdir/peaks.bed > ${1}tagdir/peaks.chr.bed
+
+#annotate peaks with closest gene
+annotatePeaks.pl ${1}tagdir/peaks.chr.bed mm10 -annStats ${1}tagdir/annstats.txt  > ${1}tagdir/peaksannotated.txt
 
 
