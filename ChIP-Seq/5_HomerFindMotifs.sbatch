@@ -11,5 +11,5 @@
 
 module load homer
 
-
-findMotifsGenome.pl $1 mm10 171127ATAC/$(x)motif -preparsedDir 171127ATAC/
+#input is a peaks file
+findMotifsGenome.pl $1 mm10 ${1}motif 
