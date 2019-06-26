@@ -7,7 +7,6 @@
 #SBATCH --error=%j.error
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=user.name@petermac.org
-# SBATCH --workdir=$1
 #SBATCH --partition=prod_short
 
 
