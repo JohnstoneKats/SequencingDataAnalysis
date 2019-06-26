@@ -7,7 +7,7 @@ see ```--help``` for more availavle options at each step.
 
 The following walk-through provides an example of the analysis pipeline for ChIP-seq data. For the purposes of this example, we will be starting with demultiplexed fastq files. These files have been sequenced single ended 75bp at approximately 20 million paired reads per sample. An input control will be used below, but you could also use an IgG contorol as well. 
 
-The PeterMac bioinformatics core automatically applies Seqliner2.0 pipeline to the Fastq files to produce .bam and .bai files. if you wish to start with these skip to the **Peak Calling** section.
+The PeterMac bioinformatics core automatically applies Seqliner2.0 pipeline to the Fastq files to produce .bam and .bai files. If you wish to start with these skip to the **Peak Calling** section.
 
 The software used have been referenced at the end, the majority of this analysis is based on the user manuals linked below, with only slight deviations from default settings. 
 
@@ -64,35 +64,38 @@ Perform QC on Fastq files using fastqc
 
 *1_fastQC.sbatch*
 ```
+mkdir Fastqc/
+
 module load fastqc
 
-fastqc -o ${d} -f fastq --noextract -t 8 ${1}
+fastqc -o Fastqc/ -f fastq --noextract -t 8 Sample.fastq.gz
 ```
 
 ### Align to reference genome with Bowtie2
-Align Fastq files to the mouse genome (mm10) using Bowtie2. The resulting sam files are then sorted, converted to bam and indexed with samtools. IGV tools can then be used to visualise the TDF. You will need a Bowtie2 indexed reference genome. For paired ended data, use 2.2_ChIPseq_bowtie2_mouse_PE.sbatch. 
+Align Fastq files to the mouse genome (mm10) using Bowtie2. The resulting sam files are then sorted, converted to bam and indexed with samtools. IGV tools can then be used to visualise the TDF. You will need a Bowtie2 indexed reference genome. For paired ended data, see the [PE script](2.2_ChIPseq_bowtie2_mouse_PE.sbatch). 
 If you have an ERCC OR/AND an S2 spike-in, you will need to map to a merged reference genome e.g. mm10+ERCC OR mm10+DM3 OR mm10+DM3+ERCC.
 
-*2_ChIPseq_bowtie2_mouse.sbatch*
+[2_ChIPseq_bowtie2_mouse_SE.sbatch](2_ChIPseq_bowtie2_mouse_SE.sbatch)
 ```
 module load bowtie2
 module load samtools
 module load igvtools
 
-s=$(basename $1)
-t=$(dirname $1)
-x=`echo $s | cut -d "_" -f 1-2`
-echo $s
-echo $x
+bowtie2 -p 32 -x /data/reference/indexes/mouse/mm10/bowtie2/Mus_musculus.GRCm38.dna.toplevel -U Sample.fastq.gz -S Sample.sam
 
-bowtie2 -p 32 -x /data/reference/indexes/mouse/mm10/bowtie2/Mus_musculus.GRCm38.dna.toplevel -U $1 -S ${1}.sam
+samtools view -@ 8 -Sbo Sample.sam.bam  Sample.sam
+samtools sort -@ 8 -o Sample.sorted.bam Sample.sam.bam
+samtools rmdup -s Sample.sorted.bam Sample.sorted.rmdup.bam
+samtools index Sample.sorted.rmdup.bam Sample.sorted.rmdup.bam.bai
+igvtools count -z 5 -w 25 -e 225 Sample.sorted.rmdup.bam Sample.tdf mm10
 
-samtools view -@ 8 -Sbo ${t}/${x}.sam.bam  ${t}/${x}.sam
-samtools sort -@ 8 -o ${t}/${x}.sam.sorted.bam ${t}/${x}.sam.bam
-samtools rmdup -s ${t}/${x}.sam.sorted.bam ${t}/${x}.sam.sorted.bam.rmdup.bam
-samtools index ${t}/${x}.sam.sorted.bam.rmdup.bam ${t}/${x}.sam.sorted.bam.rmdup.bam.bai
-igvtools count -z 5 -w 25 -e 225 ${t}/${x}.sam.sorted.bam.rmdup.bam ${t}/${x}.sam.sorted.bam.rmdup.bam.tdf mm10
+```
+Remove intermediate files
 
+```
+rm Sample.sam
+rm Sample.sam.bam
+rm Sample.sorted.bam
 ```
 
 ## Peak Calling
@@ -103,26 +106,27 @@ This will produce a bed file of genomic coordinates of identified peaks or enric
 
 It is important to identify which settings will produce the best peaks
 
---broad : Use this option for broader-style enrichment.
+--broad : Use this option for broader-style enrichment patterns such as histone marks including H3k27me3 or H2Ak110ub.
 
 --cutoffanalysis : Recommended to run this first to see how changing the p/q value impacts the number and width of the peaks.
 
 see macs2 callpeak --help for more info
 
-*3_MACS2.sbatch*
+[3_MACS2.sbatch](3_MACS2.sbatch)
 
 For broad peaks e.g. histone marks
 ```
 module load macs
 
-macs2 callpeak -g mm -f BAM -t IPSAMPLE.rmdup.bam -c INPUTSAMPLE.rmdup.bam --extsize 225 --broad --broad-cutoff 0.1 --cutoff-analysis --outdir IPSAMPLEmacs2 -n IPSAMPLEpeaks
+macs2 callpeak -g mm -f BAM -t Sample.sorted.rmdup.bam -c INPUTSAMPLE.rmdup.bam --broad --broad-cutoff 0.1 --cutoff-analysis --outdir Sample_broad_macs2 -n Sample_broad_peaks
 ```
+
 For more narrow peaks e.g. transcription factor ChIP: 
 
 ```
 module load macs
 
-macs2 callpeak -g mm -f BAM -t $1 -c 181104_MK26RNA/SRA/SRR2132490.fastq.gz.sam.sorted.bam.rmdup.bam --extsize 225 --cutoff-analysis --outdir ${1}macs2 -n ${1}peaks
+macs2 callpeak -g mm -f BAM -t $1 -c Sample.sorted.rmdup.bam --cutoff-analysis --outdir Sample_macs -n Samplepeaks
 ```
 
 
@@ -131,29 +135,29 @@ Please see [HERE](http://homer.ucsd.edu/homer/ngs/peaks.html) for a more compreh
 First, a tag directory needs to be made. Make a tag directory for all samples, including input/igG control.
 Homer uses .sam files, so you will need to open the final processed bam files as .sam files using samtools.
 
-*3.1_HomerTagDir.sbatch*
+[3.1_HomerTagDir.sbatch](3.1_HomerTagDir.sbatch)
 ```
 module load homer
 module load samtools
 
  
-samtools view -h IP.bam > IP.sam
-makeTagDirectory IPtagdir/ IP.sam -format sam
+samtools view -h Sample.sorted.rmdup.bam > Sample.sam
+makeTagDirectory Sampletagdir/ Sample.sam -format sam
 
 ```
-You can then use these tag directories to call peaks on your IP samples relative to your control.the peaks can then be converted to a bed file, which can then be annotated with homers annotatePeaks.pl. (You may need to add "chr" to the start if your reference genome does not include it - see line 3 below).
+You can then use these tag directories to call peaks on your IP samples relative to your control. The peaks can then be converted to a bed file, which can then be annotated with homers annotatePeaks.pl. (You may need to add "chr" to the start if your reference genome does not include it - see line 3 below).
 
 ```
-findPeaks IPtagdir/ -style factor -o auto -i InputControltagdir/ 
-pos2bed.pl -o IPtagdir/IPpeaks.bed IPtagdir/IPpeaks.txt
-awk '{print "chr"$0}' IPtagdir/IPpeaks.bed > IPtagdir/IPpeaks.chr.bed
+findPeaks Sampletagdir/ -style factor -o auto -i InputControltagdir/ 
+pos2bed.pl -o Sampletagdir/Samplepeaks.bed Sampletagdir/Samplepeaks.txt
+awk '{print "chr"$0}' Sampletagdir/Samplepeaks.bed > Sampletagdir/Samplepeaks.chr.bed
 annotatePeaks.pl IPtagdir/peaks.bed.chr.bed mm10 > IPtagdir/peaksannotated.txt
 ```
-Homer can also be used for Superenhancer - style analysis: 
+Homer can also be used for Superenhancer-style analysis: 
 
-*3.1.1_HomerTagSuperE.sbatch*
+[3.1.1_HomerTagSuperE.sbatch](3.1.1_HomerTagSuperE.sbatch)
  ``` 
- findPeaks IPtagdir/ -i InputControltagdir -style super -o IPtagdir/IPSuper.txt -superSlope -1000 -L 2 -typical IPnormalpeaks.txt
+findPeaks IPtagdir/ -i InputControltagdir -style super -o IPtagdir/IPSuper.txt -superSlope -1000 -L 2 -typical IPnormalpeaks.txt
 
  ```
 
@@ -168,6 +172,7 @@ bedtools closest -D -a IPpeaks.chr.bed -b mm10reference.bed > IPpeaks.annotated.
 ### Finding enriched regions with Csaw
 Csaw is an R package which employs window based analysis to calculate enriched regions in your IP sample compared to input control. The analysis is very similar to RNA-seq analysis.
 Load required packaged: 
+
 ```
 library(csaw)
 library(pheatmap)
@@ -180,8 +185,9 @@ library(genomation)
 Read in bam files, filter out regions with low logcpm values: 
 
 ```
+setwd(bamfiledir)
 bamfiles <- list.files( pattern = ".bam$")
-data_all <- windowCounts(bamfiles[c(1:5,21)], ext=200, width=1000,bin=T)
+data_all <- windowCounts(bamfiles], ext=200, width=1000,bin=T)
 
 #filter out low logcpm values
 data_keep<- aveLogCPM(asDGEList(data_all)) >= 0
@@ -217,7 +223,7 @@ SI<-as.data.frame(SI)
 
 
 #create concatination of group for design matrix
-group <- paste(SI$Bcor,sep=".")
+group <- paste(SI$Treatment,sep=".")
 group <- factor(group)
 design <- model.matrix(~ 0 + group)
 colnames(design) <- levels(group)
@@ -239,7 +245,6 @@ y <- estimateDisp(y, design,trend.method = "loess")
 fit to model and find results
 
 ```
-
 fit <- glmQLFit(y, design, robust=TRUE)
 
 results <- glmQLFTest(fit,contrast = cont.matrix)
@@ -285,12 +290,12 @@ You may sometimes have trouble with the homer config directories, try ```-prepar
 
 If you have the data, it may be a good idea to set the background as ATAC peaks from the same cell type to reduce bias for open regions of the genome. ```-bg ATACpeaks.bed```
 
-*5_HomerFindMotifs.sbatch*
+[5_HomerFindMotifs.sbatch](5_HomerFindMotifs.sbatch)
 
 ```
 module load homer
 
-findMotifsGenome.pl IPsamplePeaks.bed mm10 IPsample-motif 
+findMotifsGenome.pl SamplePeaks.bed mm10 Sample-motif 
 ```
 
 ## Generating Figures
@@ -300,6 +305,7 @@ findMotifsGenome.pl IPsamplePeaks.bed mm10 IPsample-motif
 To generate a heatmap with deeptools, you will need: bam files and a reference bed file. The reference can be a reference genome with CDS or TSS, or it can be a peak summit bed file or a peak bed file generated by macs or homer above. 
 
 You will first need to make bigwigs of your .bam files, including of the input control.
+
 ```
 module load deeptools
 bamCoverage -p 8 -e 225 --normalizeUsingRPKM -b IPsample.bam -o IPsample.bw
@@ -313,6 +319,7 @@ computeMatrix scale-regions -S IPsample.bw -R ref/mm10reference.bed -out IPsampl
 ```
 
 reference-point is better for plotting heatmap of enrichment relative to TSS, or peak summits. 
+
 ```
 computeMatrix reference-point -S IPsample.bw  -R mm10TSS.bed -out IPsample-mm10TSS.gz -b 1000 -a 1000
 ```
@@ -323,13 +330,14 @@ From the created matrix you can then plot a heatmap:
 ```
 plotHeatmap -m IPsample-mm10TSS.gz -out IPsample-mm10TSS.pdf   
 ``` 
-### Figures with R (Csaw analysis)
+
+### Figures with R (from Csaw analysis)
 
 #### Heatmap
 
 ```
 pheatmap(adj.counts_sortedbypvalue[1:100,],scale = "row",show_rownames = F,border_color = NA,
-         main = c("sig diff regions"),file = "Pheatmap.pdf")
+         main = c("top 100 significanlty differentially enriched regions"),file = "Heatmap.pdf")
 ```
 
 #### Boxplot
@@ -346,7 +354,7 @@ ggplot(data = melt, aes(x=group, y=value)) + geom_boxplot(aes(fill=group)) +
   theme_light() + scale_fill_brewer(palette="Set1",direction=-1)+ xlab("") +
   ylab("Normalised CPM")+ 
   stat_compare_means(method = "t.test",aes(label = paste('p =', ..p.format..)))+ 
-  ggtitle("Top 100 regions")
+  ggtitle("Top 100 significantly enriched regions")
 
 ```
 
@@ -356,7 +364,7 @@ ggplot(data = melt, aes(x=group, y=value)) + geom_boxplot(aes(fill=group)) +
 
 * **Madison Kelly** - *Author of this walkthrough* [madisonJK](https://github.com/madisonJK)
 
-* Stephin Vervoort - *Helping with initial ChIP-seq analysis*
+* Stephin Vervoort - *Initial ChIP-seq analysis*
 
 
 ## Further information and useful tutorials
