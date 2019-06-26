@@ -11,7 +11,7 @@ More in-depth analysis, such as [footprinting](https://bioinformatics-core-share
 
 ## Getting Started
 
-The following walk-through provides an example of the analysis pipeline for ChIP-seq data. For the purposes of this example, we will be starting with demultiplexed fastq files. These samples have been sequenced single ended 75bp at approximately 20 million reads per sample. 
+The following walk-through provides an example of the analysis pipeline for ATAC-seq data. For the purposes of this example, we will be starting with demultiplexed fastq files. These samples have been sequenced single ended 75bp at approximately 20 million reads per sample. 
 
 The software used have been referenced at the end, the majority of this analysis is based on the user manuals linked below, with only slight deviations from default settings.
 
