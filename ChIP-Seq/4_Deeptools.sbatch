@@ -15,11 +15,16 @@ module load deeptools
 
 bamCoverage -p 8 -e 225 --normalizeUsingRPKM -b ${1} -o ${1}.bw
 
-computeMatrix scale-regions -S 190430_Pol2/*.bw -R ref/hg19HighTHP1exp.bed -out 190430_Pol2/highexpgenes.gz -b 1000 -a 1000
+computeMatrix reference-point  -S ${1}.bw -R peaks.bed -out ${1}peakcentered.gz -b 1000 -a 1000
 
-#computeMatrix reference-point -S EGR2/egr2.bw  -R mm10TSSmodifiedmerged.bed -out 190430_Pol2/allgenes.gz -b 1000 -a 1000
+#or scale to mm10 reference genes
+#computeMatrix scale-regions -S ${1}.bw  -R mm10reference.bed -out ${1}scaletogenes.gz -b 1000 -a 1000
 
-plotHeatmap -m 190430_pol2/highexpgenes.gz -out 190430_Pol2/highexpheatmaptest.pdf   
+plotHeatmap -m ${1}peakcentered.gz -out ${1}peakcenteredHeatmap.pdf  
+
+#change heatmap colours + other options
+#plotHeatmap -m ${1}peakcentered.gz -out ${1}peakcenteredHeatmap.pdf --colorList 'white, purple' --whatToShow 'heatmap and colorbar' --kmeans 5 --zMin 0 --zMax 100 --samplesLabel SAMPLE1 --outFileSortedRegions  SampleKmeans5.txt
+
 
 
 
