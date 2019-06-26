@@ -10,7 +10,6 @@
 #SBATCH --partition=prod
 
 
-module load bowtie2
 module load samtools
 module load igvtools
 module load hisat2
