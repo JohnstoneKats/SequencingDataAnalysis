@@ -1,7 +1,16 @@
-sample.id<-list("A1","A2","A3","A4","B7","B8","B9","B10")
 library(methylKit)
 library(genomation)
 library(genomation)
+library(ggpubr)
+library(reshape2)
+library(ggplot2)
+library(ggpubr)
+library(rgl)
+library(biomaRt)
+library(rowr)
+library(dendextend)
+library(BSgenome)
+library("BSgenome.Mmusculus.UCSC.mm10")
 
 ##load in bam files and write to methylkit txt files for easy access later#####
 
@@ -18,16 +27,16 @@ if( PROCESS_BAM_FILES ){
                              sample.id=paste(sample_name), assembly="mm10", 
                             read.context="CpG", save.folder="/Users/kellymadison/Documents/R/MK26RNAseq/RRBS" )}}
 
-##read back in methylkit files 
+##read in methylkit files 
 methylkit.txt.list<-list.files( path = "RRBS/",pattern = "_CpG.txt$", all.files = FALSE,
            full.names = F, recursive = F,
            ignore.case = FALSE, include.dirs = F, no.. = T)
 
 files = as.list( paste("RRBS/",methylkit.txt.list,sep = ""))
 
-myobjall = methRead(files, sample.id=list("DOX1","DOX2","DOX3","DOX4","UT4","UT1","UT2","UT3"),
+myobjall = methRead(files, sample.id=list("A1","A2","A3","A4","B4","B1","B2","B3"),
                     assembly="mm10", treatment=c(1,1,1,1,0,0,0,0)
-)
+
 #add chr for downstream analysis 
 for (i in 1:8) {myobjall[[i]]$chr<-paste("chr",myobjall[[i]]$chr,sep = "") }
 
@@ -35,20 +44,22 @@ getMethylationStats(myobjall[[8]],plot=T,both.strands=FALSE)
 getCoverageStats(myobjall[[7]],plot=TRUE,both.strands=FALSE)
 
 filtered.myobj=filterByCoverage(myobjall,lo.count=10,lo.perc=NULL,hi.count=NULL,hi.perc=99.9)
-filtered.myobj
-methall = unite(filtered.myobj, destrand=TRUE, min.per.group=2L)
 
+methall = unite(filtered.myobj, destrand=TRUE, min.per.group=2L)
+                    
+#see correlation between samples 
 getCorrelation(na.omit(methall),method = "pearson",plot = F)
 corr<-getCorrelation(na.omit(methall),method = "pearson",plot = F)
-corr<-read.table("MK26RRBS corr.txt",header = T, row.names = T)
+corr<-read.table("correlation.txt",header = T, row.names = T)
 pheatmap(corr)
 
+#see clustering between samples
 clusterSamples(methall, dist="correlation", method="ward", plot=TRUE)
 PCASamples(methall, screeplot=TRUE)
-PCASamples(methall)
 PCASamples(na.omit(methall))
 
-library(rgl)
+
+
 #####all cs annotation #####
 gene.obj=readTranscriptFeatures("RRBS/mm10genes.bed")
 allCann=annotateWithGeneParts(as(methall,"GRanges"),gene.obj)
@@ -73,23 +84,15 @@ genomation::plotTargetAnnotation(allCann,
 
 genomation::getFeatsWithTargetsStats(AllCcpg,percentage=TRUE)
 
-
-
-
-
 ####calculate Diff C ######
-#myDiff=calculateDiffMeth(methall,overdispersion="MN",test="Chisq",mc.cores=4)
+
 myDiffuncorrected=calculateDiffMeth(methall,mc.cores=4)
-
-
-#myDiff20=getMethylDiff(myDiff,difference=25,qvalue=0.05)
 
 myDiff20unc=getMethylDiff(myDiffuncorrected,difference=25,qvalue=0.05)
 
-
 diffMethPerChr(myDiffuncorrected,plot=TRUE,qvalue.cutoff=0.01, meth.cutoff=25)
 
-bedgraph(myDiff20unc, file.name = "MK26dmc.bed", col.name = "meth.diff", unmeth = FALSE,
+bedgraph(myDiff20unc, file.name = "DMC.bed", col.name = "meth.diff", unmeth = FALSE,
          log.transform = FALSE, negative = FALSE, add.on = "")
 
 #####annotate diff Cs ####
@@ -148,16 +151,15 @@ diffMethPerChr(myDiffuncorrectedCpGi,plot=TRUE,qvalue.cutoff=0.05, meth.cutoff=2
 
 cpgsig<- as.data.frame(mperc.meth.CpGi[myDiffuncorrectedCpGi$qvalue<0.05,])
 boxplot(cpgsig)
-#pheatmap(promsig,border_color = NA,show_rownames = F,scale = "row")
 
 myDiff25CpG=getMethylDiff(myDiffuncorrectedCpGi,difference=25,qvalue=0.05)
 
 diffCpGAnn=annotateWithGeneParts(as(myDiff25CpG,"GRanges"),gene.obj)
 TSSassdiffCpG<-getAssociationWithTSS(diffCpGAnn)
-a
+
 Diff25CpGAnn<-cbind(myDiff25CpG,TSSassdiffCpG)
 
-library(biomaRt)
+
 mart <- useDataset("mmusculus_gene_ensembl", useMart("ensembl",host = "www.ensembl.org",
                                                     ensemblRedirect = FALSE))
 genes <- Diff25CpGAnn$feature.name
@@ -165,18 +167,11 @@ G_list <- getBM(filters= "refseq_mrna", attributes= c("refseq_mrna","external_ge
 
 GenenamesDiff25CpG<-merge(Diff25CpGAnn,G_list,by.x="feature.name",by.y="refseq_mrna")
 
-#integrate with RNA? 
-MK26RNA<-sigsorted
-diffCpGgenes<-merge (GenenamesDiff25CpG, MK26RNA, by.x= "external_gene_name", by.y ="row.names")
-diffCpGgenesshort<-diffCpGgenes[diffCpGgenes$P.Value<0.05,]
-plot(diffCpGgenesshort$meth.diff,diffCpGgenesshort$logFC)
-abline(lm(diffCpGgenes$logFC~diffCpGgenes$meth.diff), col="blue") # regression line (y~x)
-cor.test(diffCpGgenes$meth.diff,diffCpGgenes$logFC)
-
 
 
 ########summarise counts over promoters######
-#for (i in 1:8) {myobjall[[i]]$chr<-paste("chr",myobjall[[i]]$chr,sep = "") }
+#can also summarise over exons, introns, or enhancers as well
+
 promoters=regionCounts(filtered.myobj,gene.obj$promoters)
 
 getCoverageStats(promoters[[2]],plot=TRUE,both.strands=FALSE)
@@ -196,9 +191,9 @@ promsig<- as.data.frame(mperc.meth.proms[myDiffuncorrectedproms$qvalue<0.05,])
 boxplot(promsig)
 
 boxplotshort<-as.data.frame(t(promsig))
-boxplotshort$group<-c("DOX","DOX","DOX","DOX","UT","UT","UT","UT")
+boxplotshort$group<-c("A","A","A","A","B","B","B","B")
 boxplotshort$group <- factor(boxplotshort$group,
-                             levels = c("UT","DOX"),ordered = TRUE)
+                             levels = c("B","A"),ordered = TRUE)
 boxplotmelt<- melt(boxplotshort, id.var = "group")
 
 ggplot(data=subset(boxplotmelt, !is.na(value)), aes(x=group, y=value)) + geom_boxplot(aes(fill=group)) + 
@@ -213,16 +208,10 @@ pheatmap(promsig,border_color = NA,show_rownames = F,scale = "row")
 myDiff25proms=getMethylDiff(myDiffuncorrectedproms,difference=25,qvalue=0.01)
 diffMethPerChr(myDiffuncorrectedproms,plot=TRUE,qvalue.cutoff=0.05, meth.cutoff=25)
 
-#diffAnn=annotateWithGeneParts(as(myDiff25proms,"GRanges"),gene.obj)
-#TSSass<-as.data.frame(getAssociationWithTSS(diffAnn))
-
-#Diff25promAnn<-cbind(as(diffAnn,"GRanges"),TSSass)
-
 diffpromAnn=annotateWithGeneParts(as(myDiff25proms,"GRanges"),gene.obj)
 TSSassdiffprom<-getAssociationWithTSS(diffpromAnn)
 
 Diff25promAnn<-cbind(myDiff25proms,TSSassdiffprom)
-
 
 mart <- useDataset("mmusculus_gene_ensembl", useMart("ensembl",host = "www.ensembl.org",
                                                      ensemblRedirect = FALSE))
@@ -231,238 +220,8 @@ G_list <- getBM(filters= "refseq_mrna", attributes= c("refseq_mrna","external_ge
 
 GenenamesDiff25prom<-merge(Diff25promAnn,G_list,by.x="feature.name",by.y="refseq_mrna")
 
-#integrate with RNA? 
-diffpromgenes<-merge (GenenamesDiff25prom, MK26RNA, by.x= "external_gene_name", by.y ="row.names")
-diffpromgenesshort<-diffpromgenes[diffpromgenes$P.Value<0.05,]
-plot(diffpromgenes$meth.diff,diffpromgenes$logFC,pch= 20)
-abline(lm(diffpromgenes$logFC~diffpromgenes$meth.diff), col="red") # regression line (y~x)
-cor.test(diffpromgenesshort$meth.diff,diffpromgenesshort$logFC)
-
-bedgraph(myDiff25proms, file.name = "MK26DMprom.bed", col.name = "meth.diff", unmeth = FALSE,
-         log.transform = FALSE, negative = FALSE, add.on = "")
-
-####summarise over exons#####
-
-
-unique.exon<-unique(gene.obj$exons)
-
-exons=regionCounts(filtered.myobj,unique.exon)
-getCoverageStats(exons[[7]],plot=TRUE,both.strands=FALSE)
-
-methexons = unite(exons, destrand=TRUE, min.per.group=2L)
-
-clusterSamples(methexons, dist="correlation", method="ward", plot=F)
-PCASamples(methexons)
-
-mperc.meth.exons=percMethylation(methexons)
-boxplot(mperc.meth.exons)
-exsig<- as.data.frame(mperc.meth.exons[myDiffuncorrectedexons$qvalue<0.05,])
-boxplot(exsig)
-
-boxplotshort<-as.data.frame(t(exsig))
-boxplotshort$group<-c("DOX","DOX","DOX","DOX","UT","UT","UT","UT")
-boxplotshort$group <- factor(boxplotshort$group,
-                             levels = c("UT","DOX"),ordered = TRUE)
-boxplotmelt<- melt(boxplotshort, id.var = "group")
-
-ggplot(data=subset(boxplotmelt, !is.na(value)), aes(x=group, y=value)) + geom_boxplot(aes(fill=group)) + 
-  theme_light() + scale_fill_brewer(palette="Set1")+ xlab("") +
-  ylab("percentage methylation")+ggtitle("Differentially methylated exons")
-compare_means(value~group, boxplotmelt)
-
-pheatmap(na.omit(exsig),border_color = NA,show_rownames = F)
-
-myDiffuncorrectedexons=calculateDiffMeth(methexons,mc.cores=4)
-myDiff25exons=getMethylDiff(myDiffuncorrectedexons,difference=25,qvalue=0.01)
-diffMethPerChr(myDiff25exons,plot=TRUE,qvalue.cutoff=0.05, meth.cutoff=25)
-
-diffexonAnn=annotateWithGeneParts(as(myDiff25exons,"GRanges"),gene.obj)
-TSSassdiffexon<-getAssociationWithTSS(diffexonAnn)
-
-Diff25exonsAnn<-cbind(myDiff25exons,TSSassdiffexon)
-
-mart <- useDataset("mmusculus_gene_ensembl", useMart("ensembl",host = "www.ensembl.org",
-                                                     ensemblRedirect = FALSE))
-genes <- Diff25exonsAnn$feature.name
-G_list <- getBM(filters= "refseq_mrna", attributes= c("refseq_mrna","external_gene_name"),values=genes,mart= mart)
-
-GenenamesDiff25exons<-merge(Diff25exonsAnn,G_list,by.x="feature.name",by.y="refseq_mrna")
-
-#integrate with RNA? 
-diffexongenes<-merge (GenenamesDiff25exons, MK26RNA, by.x= "external_gene_name", by.y ="row.names")
-diffexongenesshort<-diffexongenes[diffexongenes$P.Value<0.05,]
-plot(diffexongenesshort$meth.diff,diffexongenesshort$logFC,pch= 20)
-abline(lm(diffexongenesshort$logFC~diffexongenesshort$meth.diff), col="red") # regression line (y~x) 
-
-cor.test(diffexongenesshort$meth.diff,diffexongenesshort$logFC)
-
-bedgraph(myDiff25exons, file.name = "MK26DMexon.bed", col.name = "meth.diff", unmeth = FALSE,
-         log.transform = FALSE, negative = FALSE, add.on = "")
-
-#####summarise accross introns ######
-
-unique.intron<-unique(gene.obj$introns)
-
-introns=regionCounts(filtered.myobj,unique.intron)
-getCoverageStats(introns[[7]],plot=TRUE,both.strands=FALSE)
-
-methintrons = unite(introns, destrand=TRUE, min.per.group=2L)
-
-clusterSamples(methintrons, dist="correlation", method="ward", plot=F)
-PCASamples(methintrons)
-
-mperc.meth.introns=percMethylation(methintrons)
-boxplot(mperc.meth.introns)
-intsig<- as.data.frame(mperc.meth.introns[myDiffuncorrectedintons$qvalue<0.05,])
-boxplot(intsig)
-
-boxplotshort<-as.data.frame(t(intsig))
-boxplotshort$group<-c("DOX","DOX","DOX","DOX","UT","UT","UT","UT")
-boxplotshort$group <- factor(boxplotshort$group,
-                             levels = c("UT","DOX"),ordered = TRUE)
-boxplotmelt<- melt(boxplotshort, id.var = "group")
-
-ggplot(data=subset(boxplotmelt, !is.na(value)), aes(x=group, y=value)) + geom_boxplot(aes(fill=group)) + 
-  theme_light() + scale_fill_brewer(palette="Set1")+ xlab("") +
-  ylab("percentage methylation")+ggtitle("Differentially methylated introns")
-compare_means(value~group, boxplotmelt)
-means <- aggregate(value~group, boxplotmelt, mean) 
-
-
-#pheatmap(na.omit(exsig),border_color = NA,show_rownames = F)
-
-myDiffuncorrectedintons=calculateDiffMeth(methintrons,mc.cores=4)
-myDiff25introns=getMethylDiff(myDiffuncorrectedintons,difference=25,qvalue=0.01)
-diffMethPerChr(myDiff25introns,plot=TRUE,qvalue.cutoff=0.05, meth.cutoff=25)
-
-diffintronAnn=annotateWithGeneParts(as(myDiff25introns,"GRanges"),gene.obj)
-TSSassdiffintron<-getAssociationWithTSS(diffintronAnn)
-
-Diff25intronsAnn<-cbind(myDiff25introns,TSSassdiffintron)
-
-mart <- useDataset("mmusculus_gene_ensembl", useMart("ensembl",host = "www.ensembl.org",
-                                                     ensemblRedirect = FALSE))
-genes <- Diff25intronsAnn$feature.name
-G_list <- getBM(filters= "refseq_mrna", attributes= c("refseq_mrna","external_gene_name"),values=genes,mart= mart)
-
-GenenamesDiff25introns<-merge(Diff25intronsAnn,G_list,by.x="feature.name",by.y="refseq_mrna")
-
-#integrate with RNA? 
-diffintrongenes<-merge (GenenamesDiff25introns, MK26RNA, by.x= "external_gene_name", by.y ="row.names")
-diffintrongenesshort<-diffintrongenes[diffintrongenes$P.Value<0.05,]
-plot(diffintrongenesshort$meth.diff,diffintrongenesshort$logFC,pch= 20)
-abline(lm(diffintrongenesshort$logFC~diffintrongenesshort$meth.diff), col="red") # regression line (y~x) 
-
-cor.test(diffexongenesshort$meth.diff,diffexongenesshort$logFC)
-
-
-#summarise accross LT-HSC associated enhancers (from lara-asatio)#
-LTenhancers<-read.table(file="LT-HSCenhancers.txt")
-colnames(LTenhancers)<-c("chr","start","end")
-LTenhancers<-as(LTenhancers,"GRanges")
-LTenhancersMeth<-regionCounts(filtered.myobj,LTenhancers)
-
-LTenhancersMethall<-unite(LTenhancersMeth, destrand=TRUE, min.per.group=2L)
-
-clusterSamples(LTenhancersMethall, dist="correlation", method="ward", plot=T)
-PCASamples(LTenhancersMethall)
-
-mperc.meth.LTen=percMethylation(LTenhancersMethall)
-boxplot(mperc.meth.LTen)
-
-boxplotshort<-as.data.frame(t(mperc.meth.LTen))
-boxplotshort$group<-c("DOX","DOX","DOX","DOX","UT","UT","UT","UT")
-boxplotshort$group <- factor(boxplotshort$group,
-                             levels = c("UT","DOX"),ordered = TRUE)
-boxplotmelt<- melt(boxplotshort, id.var = "group")
-
-ggplot(data=subset(boxplotmelt, !is.na(value)) , aes(x=group, y=value)) + geom_boxplot(aes(fill=group)) + 
-  theme_light() + scale_fill_brewer(palette="Set1")+ xlab("") +
-  ylab("percentage methylation")+ggtitle("Differentially methylated LTHSC enhancers")
-compare_means(value~group, data=subset(boxplotmelt, !is.na(value)))
-
-
-pheatmap(na.omit(mperc.meth.LTen),scale = "row")
-
-DiffLTen=calculateDiffMeth(LTenhancersMethall,mc.cores=4)
-diffMethPerChr(DiffLTen,plot=TRUE,qvalue.cutoff=0.05, meth.cutoff=25)
-LTsig<- as.data.frame(mperc.meth.LTen[DiffLTen$pvalue<0.05&DiffLTen$meth.diff>10,])
-pheatmap(na.omit(LTsig),border_color = NA,show_rownames = F, scale = "row")
-boxplot(LTsig)
-
-myDiff25LT=getMethylDiff(DiffLTen,difference=25,qvalue=0.01)
-
-##annotate
-
-difLTAnn=annotateWithGeneParts(as(myDiff25LT,"GRanges"),gene.obj)
-
-TSSassdiffLT<-getAssociationWithTSS(difLTAnn)
-
-Diff25LTAnn<-cbind(myDiff25LT,TSSassdiffLT)
-
-mart <- useDataset("mmusculus_gene_ensembl", useMart("ensembl",host = "www.ensembl.org",
-                                                     ensemblRedirect = FALSE))
-genes <- Diff25LTAnn$feature.name
-G_list <- getBM(filters= "refseq_mrna", attributes= c("refseq_mrna","external_gene_name"),values=genes,mart= mart)
-
-GenenamesDiff25lt<-merge(Diff25LTAnn,G_list,by.x="feature.name",by.y="refseq_mrna")
-
-#integrate with RNA? 
-diffltgenes<-merge (GenenamesDiff25lt, MK26RNA, by.x= "external_gene_name", by.y ="row.names")
-diffLTgenesshort<-diffltgenes[diffltgenes$P.Value<0.05,]
-plot(diffLTgenesshort$meth.diff,diffLTgenesshort$logFC,pch= 20)
-abline(lm(diffLTgenesshort$logFC~diffLTgenesshort$meth.diff), col="red") # regression line (y~x) 
-
-cor.test(diffLTgenesshort$meth.diff,diffLTgenesshort$logFC)
-
-
-#####accross MP enhancers #######
-CMP.SE<-read.table(file="CMP-SE.txt",header =T)
-colnames(CMP.SE)<-c("chr","start","end")
-CMPse<-as(CMP.SE,"GRanges")
-CMPeMeth<-regionCounts(filtered.myobj,CMPse)
-
-CMPseMethall<-unite(CMPeMeth, destrand=TRUE, min.per.group=2L)
-
-clusterSamples(CMPseMethall, dist="correlation", method="ward", plot=T)
-PCASamples(CMPseMethall)
-
-mperc.meth.CMPs=percMethylation(CMPseMethall)
-boxplot(mperc.meth.CMPs)
-#pheatmap(na.omit(mperc.meth.CMPs),scale = "row")
-
-DiffCMP=calculateDiffMeth(CMPseMethall,mc.cores=4)
-diffMethPerChr(DiffCMP,plot=TRUE,qvalue.cutoff=0.05, meth.cutoff=25)
-CMPse<- as.data.frame(mperc.meth.LTen[DiffLTen$pvalue<0.05&DiffLTen$meth.diff>10,])
-pheatmap(na.omit(LTsig),border_color = NA,show_rownames = F, scale = "row")
-boxplot(LTsig)
-myDiff25CMP=getMethylDiff(DiffCMP,difference=25,qvalue=0.01)
-
-difCMPAnn=annotateWithGeneParts(as(myDiff25CMP,"GRanges"),gene.obj)
-
-TSSassdifcmp<-getAssociationWithTSS(difCMPAnn)
-
-Diff25CMPAnn<-cbind(myDiff25CMP,TSSassdifcmp)
-
-mart <- useDataset("mmusculus_gene_ensembl", useMart("ensembl",host = "www.ensembl.org",
-                                                     ensemblRedirect = FALSE))
-genes <- Diff25CMPAnn$feature.name
-G_list <- getBM(filters= "refseq_mrna", attributes= c("refseq_mrna","external_gene_name"),values=genes,mart= mart)
-
-GenenamesDiff25cmp<-merge(Diff25CMPAnn,G_list,by.x="feature.name",by.y="refseq_mrna")
-
-#integrate with RNA? 
-diffcmpgenes<-merge (GenenamesDiff25cmp, MK26RNA, by.x= "external_gene_name", by.y ="row.names")
-#diffexongenesshort<-diffexongenes[diffexongenes$P.Value<0.05,]
-plot(diffcmpgenes$meth.diff,diffcmpgenes$logFC,pch= 20)
-abline(lm(diffcmpgenes$logFC~diffcmpgenes$meth.diff), col="red") # regression line (y~x) 
-
-cor.test(diffcmpgenes$meth.diff,diffcmpgenes$logFC)
-
-
 #####average meth percentage accross diff gene feaatures #### 
-install.packages("rowr")
-library(rowr)
+
 mperc.meth.av<-cbind.fill(rowMeans(mperc.meth.proms[,5:8]),rowMeans(mperc.meth.exons[,5:8]),
            rowMeans(mperc.meth.CpGi[,5:8]),rowMeans(mperc.meth.introns[,5:8]),
            rowMeans(mperc.meth.LTen[,5:8])
@@ -470,7 +229,8 @@ mperc.meth.av<-cbind.fill(rowMeans(mperc.meth.proms[,5:8]),rowMeans(mperc.meth.e
 colnames(mperc.meth.av)<-c("proms","exons","CpGi","introns","HSCenhancers")
 boxplot(log(mperc.meth.av),pch = 20,cex = 0.4)
 
-######perc meth#######
+######Calculate percentage methylation#######
+
 mperc.meth=percMethylation(methall)
 allmeth<-getData(methall)
 locperc.meth<-cbind(allmeth[,1:3],mperc.meth)
@@ -491,9 +251,6 @@ kmeans(allsig,4)
 pheatmap(ordered[1:100,],border_color = NA,show_rownames = F)
 pheatmap(allsig, border_color = NA,show_rownames = F)
 
-install.packages("dendextend")
-library(dendextend)
-
 my_hclust_gene <- hclust(dist(allsig), method = "complete")
 list <- as.data.frame(cutree(tree = as.dendrogram(my_hclust_gene), k = 6))
 
@@ -507,9 +264,12 @@ as.dendrogram(my_hclust_gene) %>%
   plot(horiz = TRUE)
 
 
-###ggplot boxplot###
+###ggplot boxplots####
+
+#boxplot of percentage methylation of significant DMCs
+
 boxplotshort<-as.data.frame(t(allsig))
-boxplotshort$group<-c("DOX","DOX","DOX","DOX","UT","UT","UT","UT")
+boxplotshort$group<-c("A","A","A","A","B","B","B","B")
 boxplotshort$group <- factor(boxplotshort$group,
                                  levels = c("UT","DOX"),ordered = TRUE)
 boxplotmelt<- melt(boxplotshort, id.var = "group")
@@ -519,29 +279,25 @@ ggplot(data = boxplotmelt, aes(x=group, y=value)) + geom_boxplot(aes(fill=group)
   ylab("percentage methylation")+ggtitle("Differentially methylated cytosines")
 compare_means(value~group, data=subset(boxplotmelt, !is.na(value)))
 t.test 
-#######boxplot all methylat##
-library(ggpubr)
-library(reshape2)
-library(ggplot2)
-library(ggpubr)
+
+
+#boxplot total methylation percentage overall##
+
 boxplotshort<-as.data.frame(t(as.data.frame(mperc.meth)))
-boxplotshort$group<-c("DOX","DOX","DOX","DOX","UT","UT","UT","UT")
+boxplotshort$group<-c("A","A","A","A","B","B","B","B")
 boxplotshort$group <- factor(boxplotshort$group,
-                             levels = c("UT","DOX"),ordered = TRUE)
+                             levels = c("A","B"),ordered = TRUE)
 boxplotmelt<- melt(boxplotshort, id.var = "group")
 
 ggplot(data=subset(boxplotmelt, !is.na(value)) , aes(x=group, y=value)) + geom_boxplot(aes(fill=group)) +
   theme_light() + scale_fill_brewer(palette="Set1")+ xlab("") +
-  ylab("percentage methylation")+ggtitle("Differentially methylated cytosines")
+  ylab("percentage methylation")+ggtitle("All measured cytosine methylation")
 boxplot(mperc.meth)
+
 compare_means(value~group, boxplotmelt,method = "wilcox.test")
   
-######circos ######
+######circos Plot ######
 
-library(BSgenome)
-library("BSgenome.Mmusculus.UCSC.mm10")
-
-######altered ###### works faster once myDIff is already made#####
 chrom.length = seqlengths(Mmusculus)  
 chr.len = chrom.length[grep("_|chrM|chrX|chrY", names(chrom.length), invert = T)] 
 
@@ -599,6 +355,4 @@ ideoDMC <- function(myDiff, chrom.length, difference = 25,
   }
 }
 
-
-#####perc meth plot##### 
 
