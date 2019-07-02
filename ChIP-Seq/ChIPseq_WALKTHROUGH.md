@@ -62,7 +62,7 @@ pheatmap/1.0.12
 ### QC
 Perform QC on Fastq files using fastqc
 
-*1_fastQC.sbatch*
+[1_fastQC.sbatch](1_fastQC.sbatch)
 ```
 mkdir Fastqc/
 
