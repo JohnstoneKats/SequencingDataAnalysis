@@ -35,11 +35,14 @@ If you contribute to this resource, please annotate extensively and define all i
 * Differential methylation analysis
 
 **5. M6A-seq**
-* Paired-end
+* Paired-end mapping
+* Peak calling
 
 **6. CRISPR screen analysis**
 
 ## Further Resources 
+
+[Computational Genomics with R](http://compgenomr.github.io/book/)
 
 [RNA-seq workshop](http://combine-australia.github.io/RNAseq-R/)
 
