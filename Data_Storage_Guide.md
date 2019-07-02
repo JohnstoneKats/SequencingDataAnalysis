@@ -25,6 +25,7 @@ Additional analysis files can include:
 
 Files which can be removed: 
 - .sam files including sorted sam generated during alignment
+- trimmed fastq 
 
 ### RNA-Seq 
 1) Original Fastq files (These will be archived in bioinf/archive so no need to store them in your home/researchers folder) 
@@ -40,6 +41,7 @@ Additional analysis files can include:
 
 Files which can be removed: 
 - .sam files including sorted sam
+- trimmed fastq
 
 ## GEO dataset Submission
 ALL data from a project should be uploaded to GEO upon acceptance to a journal, or even before. It may be beneficial to fill in the metadata file for each sequencing run as the analysis is performed. 
