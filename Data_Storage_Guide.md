@@ -68,5 +68,16 @@ In short, for GEO submission you require:
 Fill in a metadata file for each individual -seq, e.g. 1 metadata sheet for ChIP-seq and 1 for ATAC-seq etc. 
 and upload all together in the same folder on the GEO server. Email the [GEO staff](geo@ncbi.nlm.nih.gov) to let them know you would like all of these samples linked in the same project (or "superseries"). The GEO staff are generally very helpful. 
 
+## Improving Reproducibility 
+
+
 ## Further Reading 
 Hart, E. M., Barmby, P., LeBauer, D., Michonneau, F., Mount, S., Mulrooney, P., ... & Hollister, J. W. (2016). Ten simple rules for digital data storage. [Link](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5072699/)
+[Interesting Blogpost from Megan Duffy] (https://dynamicecology.wordpress.com/2015/02/18/the-biggest-benefit-of-my-shift-to-r-reproducibility/)
+
+[A toolkit for data transparency takes shape](https://www.nature.com/articles/d41586-018-05990-5)
+
+[E-Book: The Practice of Reproducible Research](https://www.practicereproducibleresearch.org)
+
+[SoftwareCarpentry Workshops] (https://software-carpentry.org) 
+
