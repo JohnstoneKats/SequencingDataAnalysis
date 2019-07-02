@@ -80,5 +80,5 @@ Hart, E. M., Barmby, P., LeBauer, D., Michonneau, F., Mount, S., Mulrooney, P., 
 
 [E-Book: The Practice of Reproducible Research](https://www.practicereproducibleresearch.org)
 
-[SoftwareCarpentry Workshops] (https://software-carpentry.org) 
+[SoftwareCarpentry Workshops](https://software-carpentry.org) 
 
