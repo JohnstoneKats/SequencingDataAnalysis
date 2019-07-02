@@ -1,9 +1,14 @@
 
 # Organising and storing your next-gen seq data
 
-*What data do you need to keep and where?*
+During data processing a number of intermediate files are generated including: trimmed fastq, unsorted sam, bam with dulicates etc. It is important to remove unnessecary intermediates to reduce your digital footprint. Many of the scripts in this github incude the removal of unnessecary files, however, ensure you also remove any additional files you may create. Most files should be stored in your researchers folder (researchers/user.name), not your home directory (homer/uname).
 
-During data processing a number of intermediate files are generated including: trimmed fastq, unsorted sam, bam with dulicates etc. It is important to remove unnessecary intermediates to reduce your digital footprint. Many of the scripts in this github incude the removal of unnessecary files, however, ensure you also remove any additional files you may create. Most files should be stored in your researchers folder(researchers/user.name), not your home directory (homer/uname).
+From [Data Carpentry](https://dynamicecology.wordpress.com/2015/02/18/the-biggest-benefit-of-my-shift-to-r-reproducibility/): 
+ > Your primary collaborator is yourself 6 months from now, and your past self doesn’t answer email
+
+So make sure you know where everything is stored and how exactly to reproduce all of your data from the raw files. 
+
+*What data do you need to keep and where?*
 
 For each sample, it is a good idea to keep the **raw data file** (i.e. fastq file), at least one **processed data file** (.bam or .bed) and the **code** used to generate the figures so they can be reproduced from these files. 
 
