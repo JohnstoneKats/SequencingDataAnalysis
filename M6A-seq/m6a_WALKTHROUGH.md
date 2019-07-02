@@ -55,6 +55,17 @@ reshape2/1.4.3
 
 pheatmap/1.0.12
 
+### Optional QC
+
+You can run FastQC first to determine the quality of the raw data. fastqc will be run on the trimmed files again below anyway:
+[1_fastQC.sbatch](1_fastQC.sbatch)
+```
+module load fastqc
+
+fastqc -o fastqc -f fastq --noextract -t 8 *.fastq.gz
+
+```
+
 ## Trimming adapter sequences
 The fastq files need to be trimmed for illumina adapter sequences, and filter the resulting reads based on both quality and length. This can be performed using cutadapt or trimgalore(preferred method). Both m6a-IP and input samples are trimmed and mapped the same. 
 
@@ -70,16 +81,7 @@ trim_galore --paired -q 30 --length 30 --fastqc R1.fastq.gz R2.fastq.gz -o trimm
 
 *Important note: ensure that R1 and R2 files are balanced and in order following trimming or alignment will fail*
 
-### Optional QC
 
-You can run FastQC before this step as well to quantify the effect of trimming and filtering:
-
-```
-module load fastqc
-
-fastqc -o fastqc -f fastq --noextract -t 8 *.fastq.gz
-
-```
 
 ## Aligning Fastq Files
 Fastq files are then aligned to the mouse genome (mm10) using STAR. The resulting sam files are sorted, converted to bam, duplicates removed and indexed with samtools. 
