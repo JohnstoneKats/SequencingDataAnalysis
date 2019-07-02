@@ -1,7 +1,10 @@
 # Analysis of next-gen sequencing data
 *July 2019* 
 
-This folder contains scripts and guides for general analysis and figure generation of next-gen sequencing data which has been previously performed in the johnstone/kats lab. Many of these scripts are specific for the cluster environment at Peter Mac, and may require alteration. The guides provided are not indeded to be a comprehensive tutorial on analysis, please see the linked resources if you require further help.  If you contribute to this resource, please annotate extensively and define all input and output files within your scripts for ease of use. Please read this [guide](Data_Storage_Guide.md) for more information on how to store your analysed data. 
+This folder contains scripts and guides for general analysis and figure generation of next-gen sequencing data which has been previously performed in the johnstone/kats lab. 
+Many of these scripts are specific for the cluster environment at Peter Mac, and may require alteration. The guides provided are not indeded to be a comprehensive tutorial on analysis, please see the linked resources if you require further help.  
+
+If you contribute to this resource, please annotate extensively and define all input and output files within your scripts for ease of use. Please read this [guide](Data_Storage_Guide.md) for information on how to store your analysed data. 
 
 ### Analysis includes: 
 
@@ -35,3 +38,19 @@ This folder contains scripts and guides for general analysis and figure generati
 * Paired-end
 
 **6. CRISPR screen analysis**
+
+## Further Resources 
+
+[RNA-seq workshop](http://combine-australia.github.io/RNAseq-R/)
+
+[ChIP-seq workshop](https://github.com/crazyhottommy/ChIP-seq-analysis)
+
+[ATAC-seq workshop](https://informatics.fas.harvard.edu/atac-seq-guidelines.html)
+
+*__Need help with the basics first?__*
+
+[E-Book: R for Data Science](https://r4ds.had.co.nz) 
+
+[Data Carpentry workshops](https://software-carpentry.org/lessons/) cover the basics of research computing
+
+Sign up for a workshop with Melbourne Unis [Research Platform Services](https://www.eventbrite.com.au/o/research-platforms-services-10600096884) or visit their [website](https://research.unimelb.edu.au/infrastructure/research-platform-services#training)
