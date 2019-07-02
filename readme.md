@@ -22,7 +22,6 @@ If you contribute to this resource, please annotate extensively and define all i
 * Traditional peak calling 
 * Window-based enrichment analysis with Csaw
 * Differential peak calling
-* PolII ChIP-seq analysis
 
 **3. ATAC-seq**
 * Single -end 
@@ -56,4 +55,4 @@ If you contribute to this resource, please annotate extensively and define all i
 
 [Data Carpentry workshops](https://software-carpentry.org/lessons/) cover the basics of research computing
 
-Sign up for a workshop with Melbourne Unis [Research Platform Services](https://www.eventbrite.com.au/o/research-platforms-services-10600096884) or visit their [website](https://research.unimelb.edu.au/infrastructure/research-platform-services#training)
+Sign up for a workshop with Melbourne Uni [Research Platform Services](https://www.eventbrite.com.au/o/research-platforms-services-10600096884) or visit their [website](https://research.unimelb.edu.au/infrastructure/research-platform-services#training)
