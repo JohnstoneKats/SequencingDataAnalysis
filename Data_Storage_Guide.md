@@ -74,7 +74,8 @@ and upload all together in the same folder on the GEO server. Email the [GEO sta
 
 ## Further Reading 
 Hart, E. M., Barmby, P., LeBauer, D., Michonneau, F., Mount, S., Mulrooney, P., ... & Hollister, J. W. (2016). Ten simple rules for digital data storage. [Link](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5072699/)
-[Interesting Blogpost from Megan Duffy] (https://dynamicecology.wordpress.com/2015/02/18/the-biggest-benefit-of-my-shift-to-r-reproducibility/)
+
+[Interesting Blogpost from Megan Duffy](https://dynamicecology.wordpress.com/2015/02/18/the-biggest-benefit-of-my-shift-to-r-reproducibility/)
 
 [A toolkit for data transparency takes shape](https://www.nature.com/articles/d41586-018-05990-5)
 
