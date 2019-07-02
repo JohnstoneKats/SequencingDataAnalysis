@@ -67,7 +67,7 @@ fastqc -o ${d} -f fastq --noextract -t 8 ${1}
 Align Fastq files to the mouse genome (mm10) using Hisat2. The resulting sam files are then sorted, converted to bam and indexed with samtools. You will need a hisat indexed reference genome. For paired ended data, use 2.1_Hisat2_Mouse_PE.sbatch 
 If you have an ERCC spike in, you will need to map to a merged reference genome e.g. mm10+ERCC. 
 
-*2_Hisat2_Mouse_SE.sbatch
+*2_Hisat2_Mouse_SE.sbatch*
 ```
 module load hisat2
 module load samtools
@@ -80,7 +80,7 @@ samtools index ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.sorted.bam.bai
 ```
 *Optional:* QC can be performed on the resulting Bam files using RNAseqc. You will need to input a sample file, which is a tab-delimited text file with 3 columns specifying ID, the filename of bam file, and comments. You will need to download the rRNA reference fileand a gtf reference file in addition to a fasta file of the reference genome. see RNA-SeQC --help for more info.
 
-*3_RNAseQC.sbatch
+*3_RNAseQC.sbatch*
 ```
 module load rna-seqc
 module load java
@@ -91,7 +91,7 @@ RNA-SeQC -s "ID|filename.bam|comments"  -t ref/mm10genes.gtf -o m6a/Fastq/RNAseq
 
 IGV tools can also be used to generate a .tdf for visualisation with IGV
 
-*2_Hisat2_Mouse_SE.sbatch
+*2_Hisat2_Mouse_SE.sbatch*
 
 ```
 module load igvtools
@@ -105,7 +105,7 @@ igvtools count -z 5 -w 25 -e 150 ${1}_hisat2.sam.sorted.bam ${1}_hisat2.sam.sort
 The resulting bam files can then be used as input into subread's *featureCounts* function.
 *The unstranded option is generally used to imporve mapping rate, but this can be altered by changing ```-s 1```*
 
-*4_featureCounts.sbatch
+*4_featureCounts.sbatch*
 ```
 module load subread
 
@@ -121,7 +121,7 @@ The remaining analysis and figure generation can be performed in R. This analysi
 
 First, install and load libraries needed for analysis and figure generation
 may need to use  ```BiocManager::install()``` instead of ```biocLite()``` if using Bioconducter 3.9
-*5_RNA_Seq_Analysis.R
+*5_RNA_Seq_Analysis.R*
 ```
 source("http://bioconductor.org/biocLite.R")
 biocLite("edgeR")
