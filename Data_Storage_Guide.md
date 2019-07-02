@@ -65,6 +65,7 @@ In short, for GEO submission you require:
 
 
 *What if you have multiple sequencing "types" for a single project?* 
+
 Fill in a metadata file for each individual -seq, e.g. 1 metadata sheet for ChIP-seq and 1 for ATAC-seq etc. 
 and upload all together in the same folder on the GEO server. Email the [GEO staff](geo@ncbi.nlm.nih.gov) to let them know you would like all of these samples linked in the same project (or "superseries"). The GEO staff are generally very helpful. 
 
