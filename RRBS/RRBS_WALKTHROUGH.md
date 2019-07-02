@@ -55,7 +55,7 @@ The first step is to trim the ends of the reads, trimming 2bp off the 3' end or 
 ```
 module load trimgalore
 
-trim_galore --paired --rrbs Sample_R1_001.fastq.gz Sample_R2_001.fastq.gz -o trimGalore
+trim_galore --paired --rrbs --fastqc Sample_R1_001.fastq.gz Sample_R2_001.fastq.gz -o trimGalore
 ```
 
 ### Alignment
