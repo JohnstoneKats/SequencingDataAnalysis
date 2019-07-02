@@ -46,7 +46,7 @@ Deeptools /2.5.3
 ### QC
 Perform QC on Fastq files using fastqc
 
-*1_fastQC.sbatch*
+[1_fastQC.sbatch](1_fastQC.sbatch)
 ```
 module load fastqc
 
@@ -57,7 +57,7 @@ fastqc -o ${d} -f fastq --noextract -t 8 ${1}
 Align Fastq files to the mouse genome (mm10) using Bowtie2. The resulting sam files are then sorted, converted to bam and indexed with samtools. IGV tools can then be used to visualise the TDF. You will need a Bowtie2 indexed reference genome. For paired ended data, use 2.2_ATAC_mouse_PE.sbatch*
 
 
-*2.1_ATAC_mouse_SE.sbatch*
+[2.1_ATAC_mouse_SE.sbatch](2.1_ATAC_mouse_SE.sbatch)
 ```
 module load bowtie2
 module load samtools
@@ -85,7 +85,7 @@ This will produce a bed file of genomic coordinates of identified peaks or enric
 ### macs
 [HERE](https://hbctraining.github.io/Intro-to-ChIPseq/lessons/05_peak_calling_macs.html) is a great tutorial for peak calling with MACS. 
 
-*3_MACS2.sbatch*
+[3_MACS2.sbatch](3_MACS2.sbatch)
 
 For broad peaks e.g. histone marks
 
@@ -97,7 +97,6 @@ module load macs
 macs2 callpeak -g mm -f BAM -t ATAC.bam -c inputControl.bam --extsize 225 --nomodel --outdir ATACmacs2 -n ATACpeaks
 ```
 
-
 You can annotate ATAC peaks using bedtools. You will need a reference genome in gtf or bed format. 
 
 ```
@@ -106,13 +105,15 @@ bedtools closest -D -a ATACpeaks.bed -b mm10reference.bed > ATACpeaks.annotated.
 
 ```
 
+Peak calling for ATAC-seq can also be performed with a window based method such as Csaw. See the Csaw analysis section in the [ChIP seq walkthrough](https://github.com/madisonJK/ReferenceAnalysis/blob/master/ChIP-Seq/ChIPseq_WALKTHROUGH.md) for more info.
+
 ## Motif analysis
 
 Motif analysis can be performed on a peak bed file with Homer. 
 You may sometimes have trouble with the homer config directories, try ```-preparsedDir sample/```
 
 
-*5_HomerFindMotifs.sbatch*
+[5_HomerFindMotifs.sbatch](5_HomerFindMotifs.sbatch)
 
 ```
 module load homer
