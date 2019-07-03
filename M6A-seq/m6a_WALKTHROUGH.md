@@ -19,7 +19,7 @@ For  details of m6a-RIP seq  wetlab protocol see:
 
 ### General overview of m6a-seq analysis
 
-![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/M6A-seq/m6aOverview.png)
+![GeneralOverview](m6aOverview.png)
 
 
 ### Software and Version Control
