@@ -23,7 +23,7 @@ For more information about the ATAC-seq wetlab protocol please go [Here](https:/
 
 ### General overview of ATAC-seq analysis steps
 
-![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/ATAC-seq/ATAC-seq_Overview.png)
+![GeneralOverview](ATAC-seq_Overview.png)
 
 
 ### Software requirements and Version Control
