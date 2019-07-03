@@ -21,7 +21,7 @@ Indexed libraries are generally prepared by the Peter Mac Molecular Genomics Cor
 
 ### General overview of RNA-seq analysis
 
-![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/ChIP-Seq/ChIPseq_Overview.png)
+![GeneralOverview](ChIPseq_Overview.png)
 
 
 ### Software requirements and Version Control
