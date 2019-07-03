@@ -20,7 +20,7 @@ Lexogen QuantSeq 3' mRNA-Seq Library Prep Kit FWD for Illumina was used for libr
 
 ### General overview of RNA-seq analysis
 
-![GeneralOverview](https://github.com/madisonJK/ReferenceAnalysis/raw/master/RNA-seq/RNA-seq_Analysis_Overview.png)
+![GeneralOverview](RNA-seq_Analysis_Overview.png)
 
 
 ### Software and Version Control
