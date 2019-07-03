@@ -12,4 +12,4 @@
 module load homer
 
 
-findMotifsGenome.pl $1 mm10 $(x)motif 
+findMotifsGenome.pl $1 mm10 ${1}motif 
