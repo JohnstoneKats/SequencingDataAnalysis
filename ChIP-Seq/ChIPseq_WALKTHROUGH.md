@@ -19,7 +19,7 @@ The software used have been referenced at the end, the majority of this analysis
 For more information about the ChIP-seq wetlab protocol please go [Here](https://www.jove.com/video/55907/chromatin-immunoprecipitation-chip-in-mouse-t-cell-lines)
 Indexed libraries are generally prepared by the Peter Mac Molecular Genomics Core using KAPA Hyper Prep Kit for Illumina platforms (Kapa Biosystems, Roche, cat: 07962363001) and the SeqCap Adapter Kit (Roche, cat: 07141530001) following vendor’s instructions. 
 
-### General overview of RNA-seq analysis
+### General overview of CHIP-seq analysis
 
 ![GeneralOverview](ChIPseq_Overview.png)
 
