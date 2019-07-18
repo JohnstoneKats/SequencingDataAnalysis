@@ -1,6 +1,6 @@
 # M6A-seq
 
-M6A-seq is similar to meRIP-seq and is a method for quantifying methylation of RNA.
+M6A-seq is a method for quantifying methylation of RNA.
 This walkthrough will outline the general steps of analysing a M6A-seq dataset from fastq files through to figure generation. 
 
 
@@ -8,13 +8,13 @@ This walkthrough will outline the general steps of analysing a M6A-seq dataset f
 
 The following walk-through provides an example of the analysis pipeline for m6a-seq data. For the purposes of this example, we will be starting with demultiplexed fastq files. These files have been sequenced paired end 150bp at approximately 20 million paired reads per sample. 
 
-Both the m6a IP and the total RNA-seq (input) samples are needed for analysis. 
+Both the m6a IP and the total RNA-seq (input) for each sample are needed for analysis. 
 
 The software used have been referenced at the end, the majority of this analysis is based on the user manuals linked below, with only slight deviations from default settings. 
 
 ### Library preparation
  
-For  details of m6a-RIP seq  wetlab protocol see: 
+For  details of m6a-RIP seq  wetlab protocol see [Dominissi et al 2013](https://www.nature.com/articles/nature11112) 
 
 
 ### General overview of m6a-seq analysis
@@ -24,7 +24,7 @@ For  details of m6a-RIP seq  wetlab protocol see:
 
 ### Software and Version Control
 
-STAR
+STAR/2.5.3a
 
 samtools/1.4.1
 
@@ -36,24 +36,14 @@ RNAseqQC /1.1.8
 
 Subread /1.5.0-p3
 
-MACS
+macs/2.1.1
 
 
 R: 
 
-Limma/
+exomePeak/2.16.0
 
-Deseq/ 
-
-exomePeak
-
-MetPeak
-
-ggplot2/3.3.1
-
-reshape2/1.4.3
-
-pheatmap/1.0.12
+MetPeak/1.0.0
 
 ### Optional QC
 
@@ -169,24 +159,50 @@ BiocManager::install("exomePeak")
 
 library(exomePeak)
 
-mm10<-"path/mm10mrnaNOCHR.gtf"
+mm10<-"path/mm10mrna.gtf"
 
 ip1 <- "path/IPsample.Aligned.sortedByCoord.out.bam"
 
 input1<- "path/Input.Aligned.sortedByCoord.out.bam"
 
 result=exomepeak(GENE_ANNO_GTF=mm10,IP_BAM = ip1,INPUT_BAM = input1,
-                 EXPERIMENT_NAME="Sample.rep1")
+                 EXPERIMENT_NAME="Sample")
+```
+or with replicates:
+
+```
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("exomePeak")
+
+library(exomePeak)
+
+mm10<-"path/mm10mrna.gtf"
+
+ip1.rep1 <- "path/IPsample.Aligned.sortedByCoord.out.bam"
+ip1.rep2 <- "path/IPsample.2.Aligned.sortedByCoord.out.bam"
+
+input1.rep1<- "path/Input.Aligned.sortedByCoord.out.bam"
+input1.rep2<- "path/Input.2.Aligned.sortedByCoord.out.bam"
 
 
+ip1<-c(ip1.rep1,ip1.rep2)
+input1<-c(input1.rep1,input1.rep2)
+
+result=exomepeak(GENE_ANNO_GTF=mm10,IP_BAM = ip1,INPUT_BAM = input1,
+                 EXPERIMENT_NAME="Sample")
 ```
 
 
 ### Calling Peaks with meTPeak
 
-Build on exomePeak, MetPeak is run very similar and provides similar results. However, improvements in statistical modelling improves peak calling for low input samples. See [metPeak](https://github.com/compgenomics/MeTPeak) for more info. 
+*Recommended exome-based Peak-calling Software*
+
+MetPeak is run very similar to exomePeak and provides similar results. However, improvements in statistical modelling improves peak calling for low input samples. See [metPeak](https://github.com/compgenomics/MeTPeak) for more info. 
 
 *MetPeak.R*
+
 ```
 library("devtools")
 install_github("compgenomics/MeTPeak",build_opts = c("--no-resave-data", "--no-manual"))
@@ -204,35 +220,18 @@ metpeak(GENE_ANNO_GTF=gtf,IP_BAM = ip1,INPUT_BAM = input1,
 
 ```
 
-### QC with Trumpet
-Again, is built on exome peak and runs very similarly. Produces some useful QC files, however does not perform comparative analysis. See [Trumpet](https://github.com/skyhorsetomoon/Trumpet) for more info
-
-```
-library("devtools")
-
-install_github("skyhorsetomoon/Trumpet",build_opts = c("--no-resave-data", "--no-manual"))
-
-library(Trumpet)
-
-trumpet_report <- Trumpet_report(IP_BAM = ip_bam, Input_BAM = input_bam, 
-                                 contrast_IP_BAM = contrast_ip_bam, contrast_Input_BAM = contrast_input_bam, 
-                                 condition1 = "untreated", condition2 = "treat", GENE_ANNO_GTF = gtf)
-
-browseURL("Trumpet_report.html")
-
-
-```
-
 
 #### Annotate peaks 
 
-**with homer**
+**With homer**
 
 ```
 annotatePeaks.pl IPsample.peaks.bed mm10 -annStats IPsample.annstats.txt > IPsample.peaks.ann.bed
 
 ```
-*Note: Depending on the reference genome used, you may have to add "chr" to the bed file chromosome notation first using ```awk '{print "chr"$0}' peaks.bed > peaks.chr.bed```*
+
+*Note: Depending on the reference genome used, you may have to add "chr" to the bed file chromosome notation first using
+```awk '{print "chr"$0}' peaks.bed > peaks.chr.bed```*
 
 
 **with bedtools closest** 
@@ -250,10 +249,11 @@ findMotifsGenome.pl peakfile.bed mm10 peakMotifanalysis
 ```
 *note: If using on the cluster may need to set '''-preparsedDir dir/'''
 
+- Can also use a total RNA background control. Create Peak files from the matched RNA input samples using macs2 or Csaw and add this as ``-bg RNApeaks.bed```
 
 ### Counting Reads
 
-The resulting bam files can also then be used as input into subread's *featureCounts* function
+The resulting bam files can also then be used as input into subread's *featureCounts* function in order to count the reads in each gene. Instead of counting to the mm10 exome, could also provide the above calculated peak bed files. 
 *The unstranded option is generally used but this can be altered by changing -s 1 if the stranded option was used in the mapping steps above*
 
 *featurecounts.sbatch*
@@ -286,98 +286,22 @@ bedtools intersect -wao -a samplecombined.peaks.bed -b treated.samplecombined.pe
 
 ### Quantitative differential peak analysis with replicates with MeTPeak 
 
-
-```
-
-ip1 <- "path/IP.rep1.Aligned.sortedByCoord.out.bam"
-ip2 <- "path/IP.rep2.Aligned.sortedByCoord.out.bam"
-ip3 <- "path/treated.IP.rep1.Aligned.sortedByCoord.out.bam"
-ip4 <- "path/treated.IP.rep2.Aligned.sortedByCoord.out.bam"
-
-input1 <- "path/INPUT.rep1.Aligned.sortedByCoord.out.bam"
-input2 <- "path/INPUT.rep2.Aligned.sortedByCoord.out.bam"
-input3 <- "path/treated.INPUT.rep1.Aligned.sortedByCoord.out.bam"
-input4 <- "path/treated.INPUT.rep2.Aligned.sortedByCoord.out.bam"
-
-IP_BAM <- c(ip1,ip2)
-INPUT_BAM <- c(input1,input2)
-TREATED_IP_BAM<-c(ip3,ip4)
-TREATED_INPUT_BAM<-c(input3,input4) 
-
-diff.peaks=metPeak(GENE_ANNO_GTF=mm10,IP_BAM = IP_BAM,INPUT_BAM = INPUT_BAM,
-                 EXPERIMENT_NAME="diffPeaks")
-                 
-                 
-```
-
-### Differential peak analysis with count-based methods
-
-#### Csaw
-
-
-```
-
-```
-
-#### Limma-Voom
-Read in the counts table generated above: 
-```
-
-```
-
-
-
-
+Can be performed with MeTPeak, see user guide for more details. 
 
 ## Generating plots
 
-MD plot
-
-```
-plotMD(fit.cont,coef=1,status=summa.fit)
-
-```
-
 ### Metagene plots
 
-**Deeptools**
-compare the ip with the input
-
-```
-bamcompare -b1 sample1.sortedByCoord.out.bam.rmdup.bam -b2 input1.sortedByCoord.out.bam.rmdup.bam -o samplecompare1.bw -of bigwig
-```
-
-Compute matrix based on gene body coordinates:
-
-```
-
-```
-
-Plot the resulting matrix to visualise m6a enrichment:
-
-```
-
-```
-
-**Guitar** 
-
-```
-```
-
-**metaplotR**
-
-```
-```
-
-
+Can be created using: 
+- Deeptools 
+- guitR 
+- metaplotR 
 
 ## Acknowledgments
 
 
 * **Madison Kelly** - *Author of readme* [madisonJK](https://github.com/madisonJK)
 * **Yogesh Kumar** - *Developed initial m6a analysis for the Das lab*
-
-
 
 
 ## Further information and useful tutorials
@@ -395,7 +319,6 @@ Plot the resulting matrix to visualise m6a enrichment:
 Cui, X., Zhang, L., Meng, J., Rao, M. K., Chen, Y., & Huang, Y. (2015). MeTDiff: a novel differential RNA methylation analysis for MeRIP-seq data. IEEE/ACM transactions on computational biology and bioinformatics, 15(2), 526-534.
 
 Cui, X., Meng, J., Zhang, S., Chen, Y., & Huang, Y. (2016). A novel algorithm for calling mRNA m 6 A peaks by modeling biological variances in MeRIP-seq data. Bioinformatics, 32(12), i378-i385.
-
 
 Dominissini, D., Moshitch-Moshkovitz, S., Schwartz, S., Salmon-Divon, M., Ungar, L., Osenberg, S., et al. (2013). Topology of the human and mouse m6A RNA methylomes revealed by m6A-seq. Nature, 485(7397), 201–206.
 
